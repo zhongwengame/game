@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>汉字配对游戏 - 稳定排序组词</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            background: linear-gradient(145deg, #1e5f7a 0%, #16455b 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Segoe UI', 'Noto Sans CJK SC', Roboto, 'Helvetica Neue', sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+
+        /* 游戏主面板 */
+        .game-container {
+            max-width: 1300px;
+            width: 100%;
+            background: rgba(255, 248, 225, 0.95);
+            border-radius: 56px;
+            box-shadow: 0 20px 35px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255,255,240,0.6);
+            overflow: hidden;
+            backdrop-filter: blur(2px);
+            transition: all 0.2s;
+        }
+
+        /* 头部信息区 */
+        .stats-bar {
+            background: #2c3e2f;
+            padding: 16px 28px;
+            color: #f9eed7;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: baseline;
+            gap: 12px;
+            border-bottom: 4px solid #e3b87c;
+        }
+        .timer-box, .accuracy-box, .score-box {
+            background: #1e2a21;
+            padding: 6px 18px;
+            border-radius: 50px;
+            font-weight: bold;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.3), 0 2px 3px rgba(255,245,200,0.2);
+        }
+        .timer-box span, .accuracy-box span, .score-box span {
+            font-size: 1.2rem;
+            letter-spacing: 1px;
+        }
+        .timer-box .time-display {
+            font-family: monospace;
+            font-size: 1.7rem;
+            font-weight: 800;
+            margin-left: 8px;
+            background: #00000055;
+            padding: 2px 10px;
+            border-radius: 32px;
+        }
+        .accuracy-display, .score-display {
+            font-size: 1.6rem;
+            font-weight: 800;
+            margin-left: 8px;
+            background: #00000055;
+            padding: 2px 10px;
+            border-radius: 32px;
+        }
+
+        /* 分页选项卡 */
+        .page-tabs {
+            display: flex;
+            background: #e7dbbc;
+            padding: 0 20px;
+            gap: 8px;
+            border-bottom: 2px solid #c7a55b;
+        }
+        .tab-btn {
+            background: #c9b27c;
+            border: none;
+            font-size: 1.3rem;
+            font-weight: bold;
+            padding: 12px 28px;
+            margin-top: 8px;
+            border-radius: 28px 28px 0 0;
+            cursor: pointer;
+            color: #2c2b26;
+            transition: 0.1s linear;
+            font-family: inherit;
+            box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
+        }
+        .tab-btn.active {
+            background: #fffaec;
+            color: #b45f1b;
+            border-bottom: 3px solid #ffb347;
+            transform: translateY(-2px);
+        }
+        .tab-btn:hover:not(.active) {
+            background: #e2ca8f;
+        }
+
+        /* 汉字网格区 - 稳定顺序布局，不会随机跳动 */
+        .char-grid {
+            padding: 28px 24px;
+            background: #fef5e6;
+            min-height: 380px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(85px, 100px));
+            gap: 14px 18px;
+            justify-content: center;
+            align-items: center;
+        }
+        .char-card {
+            background: #fff2df;
+            background-image: radial-gradient(circle at 10px 10px, rgba(255,215,150,0.3) 2%, transparent 2.5%);
+            background-size: 28px 28px;
+            border-radius: 28px;
+            text-align: center;
+            padding: 16px 0;
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: #3e2a1f;
+            box-shadow: 0 8px 0 #aa7e54;
+            cursor: pointer;
+            transition: 0.07s linear;
+            border: 1px solid #f3dba6;
+            letter-spacing: 4px;
+        }
+        .char-card:active {
+            transform: translateY(3px);
+            box-shadow: 0 4px 0 #aa7e54;
+        }
+        /* 已配对消失不可见 */
+        .char-card.removed {
+            visibility: hidden;
+            pointer-events: none;
+            opacity: 0;
+            transform: scale(0.8);
+            box-shadow: none;
+        }
+        /* 当前选中高亮效果 */
+        .char-card.selected-in-sequence {
+            background: #ffe0a3;
+            box-shadow: 0 0 0 3px #f3b33d, 0 5px 0 #b4622a;
+            color: #b6490e;
+        }
+
+        /* 选中序列区域 & 翻译展示 */
+        .selection-area {
+            background: #2b2b28;
+            margin: 0 20px 20px 20px;
+            border-radius: 60px;
+            padding: 12px 20px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+        }
+        .current-sequence {
+            background: #1e1e1c;
+            padding: 10px 20px;
+            border-radius: 48px;
+            min-width: 180px;
+            flex: 2;
+        }
+        .sequence-label {
+            color: #e7cfa1;
+            font-size: 0.85rem;
+            margin-right: 12px;
+        }
+        .sequence-chars {
+            font-size: 1.7rem;
+            font-weight: bold;
+            letter-spacing: 8px;
+            color: #ffdd99;
+            font-family: monospace;
+        }
+        .clear-seq-btn {
+            background: #a55d35;
+            border: none;
+            padding: 8px 24px;
+            border-radius: 40px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.1s;
+            font-size: 1rem;
+        }
+        .clear-seq-btn:active {
+            transform: scale(0.96);
+        }
+        .translation-card {
+            background: #3f5a3c;
+            border-radius: 42px;
+            padding: 8px 24px;
+            color: #fef0cf;
+            flex: 3;
+            min-width: 240px;
+        }
+        .translation-card p {
+            margin: 4px 0;
+            font-size: 0.9rem;
+        }
+        .translation-card .word {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #ffeaac;
+        }
+
+        /* 重置按钮 */
+        .reset-btn {
+            display: block;
+            width: 200px;
+            margin: 10px auto 28px auto;
+            background: #e29c45;
+            border: none;
+            font-size: 1.2rem;
+            font-weight: bold;
+            padding: 12px;
+            border-radius: 40px;
+            color: #2d2b20;
+            cursor: pointer;
+            box-shadow: 0 5px 0 #8b4b1f;
+            transition: 0.07s linear;
+        }
+        .reset-btn:active {
+            transform: translateY(3px);
+            box-shadow: 0 2px 0 #8b4b1f;
+        }
+
+        .message-area {
+            text-align: center;
+            padding: 8px;
+            font-weight: bold;
+            color: #bf6f00;
+        }
+
+        @media (max-width: 700px) {
+            .char-grid {
+                grid-template-columns: repeat(auto-fill, minmax(70px, 80px));
+                gap: 10px;
+            }
+            .char-card {
+                font-size: 1.6rem;
+                padding: 12px 0;
+            }
+            .sequence-chars {
+                font-size: 1.2rem;
+                letter-spacing: 4px;
+            }
+            .tab-btn {
+                padding: 8px 16px;
+                font-size: 1rem;
+            }
+        }
+        footer {
+            font-size: 0.7rem;
+            text-align: center;
+            background: #e7dbbc;
+            padding: 6px;
+            color: #5f4c2b;
+        }
+    </style>
+</head>
+<body>
+<div class="game-container" id="gameApp">
+    <div class="stats-bar">
+        <div class="timer-box">⏱️ 计时 <span class="time-display" id="timerDisplay">00:00</span></div>
+        <div class="accuracy-box">🎯 正确率 <span class="accuracy-display" id="accuracyDisplay">0%</span></div>
+        <div class="score-box">🏆 配对成功 <span id="scoreCount">0</span> / <span id="totalCountSpan">0</span></div>
+    </div>
+
+    <div class="page-tabs" id="pageTabs"></div>
+
+    <div class="char-grid" id="charGrid"></div>
+
+    <div class="selection-area">
+        <div class="current-sequence">
+            <span class="sequence-label">📖 当前选字顺序 :</span>
+            <span class="sequence-chars" id="currentSeqSpan"></span>
+        </div>
+        <button class="clear-seq-btn" id="clearSeqBtn">🗑️ 清除顺序</button>
+        <div class="translation-card" id="translationBox">
+            <p>✨ 最新组词成功 ✨</p>
+            <p class="word" id="latestWord">——</p>
+            <p>🇬🇧 English: <span id="enTrans">-</span></p>
+            <p>🇷🇺 Русский: <span id="ruTrans">-</span></p>
+        </div>
+    </div>
+
+    <button class="reset-btn" id="resetGameBtn">🔄 重新开局 / 洗牌</button>
+    <div class="message-area" id="gameMsg"></div>
+    <footer>按顺序点击汉字组成词语 → 正确后词语消失 + 显示翻译 (汉字位置固定不变)</footer>
+</div>
+
+<script>
+    // ----------------------------- 词汇库（包含中文、英文、俄语翻译）--------------------------------
+    const VOCAB_DATA = [
+        { word: "成语", en: "idiom", ru: "идиома" },
+        { word: "两则", en: "two pieces", ru: "два отрывка" },
+        { word: "盲人摸象", en: "blind men feeling an elephant", ru: "слепцы и слон" },
+        { word: "智慧", en: "wisdom", ru: "мудрость" },
+        { word: "士兵", en: "soldier", ru: "солдат" },
+        { word: "瞎子", en: "blind person", ru: "слепой" },
+        { word: "分别", en: "distinguish / respectively", ru: "различать" },
+        { word: "寻找", en: "search for", ru: "искать" },
+        { word: "牙齿", en: "tooth", ru: "зуб" },
+        { word: "胡说", en: "nonsense", ru: "чепуха" },
+        { word: "尾巴", en: "tail", ru: "хвост" },
+        { word: "绳子", en: "rope", ru: "верёвка" },
+        { word: "扇子", en: "fan", ru: "веер" },
+        { word: "片面", en: "one-sided", ru: "односторонний" },
+        { word: "结论", en: "conclusion", ru: "вывод" },
+        { word: "全面", en: "comprehensive", ru: "всесторонний" },
+        { word: "将军", en: "general", ru: "генерал" },
+        { word: "善于", en: "good at", ru: "уметь" },
+        { word: "称为", en: "called as", ru: "называться" },
+        { word: "打猎", en: "hunt", ru: "охота" },
+        { word: "忽然", en: "suddenly", ru: "вдруг" },
+        { word: "蹲着", en: "squat", ru: "приседать" },
+        { word: "摇头", en: "shake head", ru: "качать головой" },
+        { word: "不要紧", en: "never mind", ru: "ничего страшного" },
+        { word: "摆放", en: "arrange", ru: "расставлять" },
+        { word: "姿势", en: "posture", ru: "поза" },
+        { word: "全神贯注", en: "concentrate", ru: "сосредоточиться" },
+        { word: "尽力", en: "do one's best", ru: "стараться изо всех сил" },
+        { word: "反应", en: "reaction", ru: "реакция" },
+        { word: "确定", en: "confirm", ru: "определить" },
+        { word: "石头", en: "stone", ru: "камень" },
+        { word: "连续", en: "continuous", ru: "непрерывный" },
+        { word: "树根", en: "tree root", ru: "корень дерева" },
+        { word: "打碎", en: "break into pieces", ru: "разбить" },
+        { word: "箭杆", en: "arrow shaft", ru: "древко стрелы" },
+        { word: "金属", en: "metal", ru: "металл" },
+        { word: "软硬", en: "soft and hard", ru: "мягкий и твёрдый" }
+    ];
+
+    // 分三组 (索引分组)
+    const GROUP_PAGES = [
+        [0,1,2,3,4,5,6,7,8,9,10,11,12],   // 成语 ~ 扇子 (13个)
+        [13,14,15,16,17,18,19,20,21,22,23,24], // 片面 ~ 摆放 (12个)
+        [25,26,27,28,29,30,31,32,33,34,35,36]  // 姿势 ~ 软硬 (12个)
+    ];
+
+    // 构建详细词汇对象
+    let fullVocabList = [];
+    for (let idx = 0; idx < VOCAB_DATA.length; idx++) {
+        const data = VOCAB_DATA[idx];
+        const chars = data.word.split('');   // 拆成汉字数组
+        fullVocabList.push({
+            id: idx,
+            word: data.word,
+            chars: chars,
+            en: data.en,
+            ru: data.ru,
+            length: chars.length
+        });
+    }
+
+    // 全局游戏状态
+    let gameItems = [];         // 全局顺序数组（固定顺序，仅重置时打乱一次，之后不再改变顺序）
+    let unmatchedVocabIds = new Set();   // 未配对成功的词汇id
+    let currentSelection = [];   // 存储选中的 gameItem 对象 (按顺序)
+    let matchedCount = 0;        // 已配对词汇数量
+    let timerSeconds = 0;
+    let timerInterval = null;
+    let gameCompleted = false;
+    let currentPage = 0;          // 0,1,2
+    let lastMatchedWordInfo = null;  // 存储最新配对词汇信息用于翻译显示
+
+    // DOM 元素
+    const charGridDiv = document.getElementById('charGrid');
+    const timerDisplaySpan = document.getElementById('timerDisplay');
+    const accuracyDisplaySpan = document.getElementById('accuracyDisplay');
+    const scoreCountSpan = document.getElementById('scoreCount');
+    const totalCountSpan = document.getElementById('totalCountSpan');
+    const currentSeqSpan = document.getElementById('currentSeqSpan');
+    const clearSeqBtn = document.getElementById('clearSeqBtn');
+    const resetGameBtn = document.getElementById('resetGameBtn');
+    const gameMsgDiv = document.getElementById('gameMsg');
+    const pageTabsDiv = document.getElementById('pageTabs');
+    const latestWordSpan = document.getElementById('latestWord');
+    const enTransSpan = document.getElementById('enTrans');
+    const ruTransSpan = document.getElementById('ruTrans');
+
+    // 辅助: 更新统计UI
+    function updateStatsUI() {
+        const total = fullVocabList.length;
+        const percent = total === 0 ? 0 : Math.floor((matchedCount / total) * 100);
+        accuracyDisplaySpan.innerText = `${percent}%`;
+        scoreCountSpan.innerText = matchedCount;
+        totalCountSpan.innerText = total;
+        if (matchedCount === total && !gameCompleted) {
+            gameCompleted = true;
+            if (timerInterval) clearInterval(timerInterval);
+            gameMsgDiv.innerText = "🎉 恭喜！所有词汇配对完成！ 🎉";
+        } else if (matchedCount !== total) {
+            if(gameCompleted) gameCompleted = false;
+            gameMsgDiv.innerText = matchedCount > 0 ? "👍 继续组词！" : "✨ 点击汉字，按顺序组词 ✨";
+        }
+    }
+
+    // 计时器
+    function startTimer() {
+        if (timerInterval) clearInterval(timerInterval);
+        timerInterval = setInterval(() => {
+            if (gameCompleted) return;
+            timerSeconds++;
+            const mins = Math.floor(timerSeconds / 60);
+            const secs = timerSeconds % 60;
+            timerDisplaySpan.innerText = `${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`;
+        }, 1000);
+    }
+
+    // 停止计时（重置时重新开始）
+    function stopTimer() {
+        if (timerInterval) {
+            clearInterval(timerInterval);
+            timerInterval = null;
+        }
+    }
+
+    // 打乱数组 (Fisher-Yates)
+    function shuffleArray(arr) {
+        for (let i = arr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+    }
+
+    // 初始化/重置游戏数据 (生成全局顺序并打乱一次，之后不变)
+    function initGameData() {
+        // 构建所有汉字项 (每个词汇的所有汉字)
+        let items = [];
+        for (let v of fullVocabList) {
+            for (let idxChar = 0; idxChar < v.chars.length; idxChar++) {
+                items.push({
+                    id: `v${v.id}_c${idxChar}`,
+                    char: v.chars[idxChar],
+                    vocabId: v.id,
+                    charIndex: idxChar,
+                    active: true
+                });
+            }
+        }
+        // ★ 全局打乱一次（仅重置/开局时打乱，后续游戏过程中顺序固定不变）
+        gameItems = shuffleArray([...items]);
+        
+        // 重置未配对词汇集合
+        unmatchedVocabIds.clear();
+        fullVocabList.forEach(v => unmatchedVocabIds.add(v.id));
+        matchedCount = 0;
+        currentSelection = [];
+        gameCompleted = false;
+        if (timerInterval) stopTimer();
+        timerSeconds = 0;
+        timerDisplaySpan.innerText = "00:00";
+        startTimer();
+        lastMatchedWordInfo = null;
+        updateTranslationDisplay(null);
+        updateStatsUI();
+        gameMsgDiv.innerText = "✨ 新的一局，汉字位置已打乱，但点击后不会移动 ✨";
+    }
+
+    // 更新下方翻译显示
+    function updateTranslationDisplay(vocab) {
+        if (vocab) {
+            latestWordSpan.innerText = vocab.word;
+            enTransSpan.innerText = vocab.en;
+            ruTransSpan.innerText = vocab.ru;
+        } else {
+            latestWordSpan.innerText = "——";
+            enTransSpan.innerText = "-";
+            ruTransSpan.innerText = "-";
+        }
+    }
+
+    // 配对成功逻辑
+    function matchSuccess(vocabId) {
+        const vocab = fullVocabList.find(v => v.id === vocabId);
+        if (!vocab) return false;
+        // 检查词汇是否还未配对
+        if (!unmatchedVocabIds.has(vocabId)) return false;
+        // 将该词汇所有汉字项 active = false
+        for (let item of gameItems) {
+            if (item.vocabId === vocabId && item.active === true) {
+                item.active = false;
+            }
+        }
+        // 从未配对集合中移除
+        unmatchedVocabIds.delete(vocabId);
+        matchedCount++;
+        // 显示配对成功的翻译
+        lastMatchedWordInfo = vocab;
+        updateTranslationDisplay(vocab);
+        updateStatsUI();
+        // 清空当前选中序列 (因为配对成功)
+        currentSelection = [];
+        updateCurrentSeqUI();
+        // 重新渲染当前页面 (消失的汉字不再显示，其他位置不变)
+        renderCurrentPageGrid();
+        // 检查游戏是否完成
+        if (matchedCount === fullVocabList.length) {
+            gameCompleted = true;
+            stopTimer();
+            gameMsgDiv.innerText = "🎉 完美通关！ 🎉";
+        } else {
+            gameMsgDiv.innerText = `✅ 组词成功：“${vocab.word}”  +1`;
+            setTimeout(() => {
+                if (gameMsgDiv.innerText.includes("成功")) gameMsgDiv.innerText = "🎯 继续配对下一个词语";
+            }, 1200);
+        }
+        return true;
+    }
+
+    // 验证当前选中序列能否匹配某个未配对词汇的前缀/完整
+    function tryMatchOrContinue() {
+        if (currentSelection.length === 0) return false;
+        // 获取当前序列的汉字串
+        const currentChars = currentSelection.map(item => item.char).join('');
+        // 遍历所有未配对的词汇
+        let possibleFullMatch = null;
+        let possiblePrefix = false;
+        for (let vocabId of unmatchedVocabIds) {
+            const vocab = fullVocabList.find(v => v.id === vocabId);
+            const wordChars = vocab.chars.join('');
+            // 完全匹配
+            if (currentChars === wordChars) {
+                possibleFullMatch = vocabId;
+                break;
+            }
+            // 前缀匹配
+            if (wordChars.startsWith(currentChars)) {
+                possiblePrefix = true;
+            }
+        }
+        if (possibleFullMatch !== null) {
+            // 完全匹配 → 配对成功
+            matchSuccess(possibleFullMatch);
+            return true;
+        } else if (!possiblePrefix && currentSelection.length > 0) {
+            // 没有任何词汇的前缀匹配，无效序列，清空
+            gameMsgDiv.innerText = "❌ 顺序错误，已清空！请重新按正确顺序组词";
+            currentSelection = [];
+            updateCurrentSeqUI();
+            renderCurrentPageGrid(); // 刷新高亮
+            setTimeout(() => { if (gameMsgDiv.innerText.includes("清空")) gameMsgDiv.innerText = "📖 按顺序点击汉字组成词语"; }, 1000);
+            return false;
+        } else {
+            // 有效前缀，等待继续点击
+            updateCurrentSeqUI();
+            renderCurrentPageGrid(); // 刷新高亮（高亮当前选中的字）
+            return false;
+        }
+    }
+
+    // 处理汉字点击
+    function onCharClick(item) {
+        if (gameCompleted) {
+            gameMsgDiv.innerText = "游戏已完成，点击「重新开局」继续挑战吧";
+            return;
+        }
+        if (!item.active) return;
+        // 避免重复点击同一个汉字项（已经在序列中不可重复添加）
+        if (currentSelection.some(sel => sel.id === item.id)) {
+            gameMsgDiv.innerText = "⚠️ 这个汉字已经在待组序列中，请继续点击下一个";
+            return;
+        }
+        // 添加到序列
+        currentSelection.push(item);
+        updateCurrentSeqUI();
+        // 尝试匹配或继续
+        tryMatchOrContinue();
+        // 刷新网格 (高亮已选中的字)
+        renderCurrentPageGrid();
+    }
+
+    // 清空当前序列
+    function clearSelection() {
+        if (currentSelection.length > 0) {
+            currentSelection = [];
+            updateCurrentSeqUI();
+            renderCurrentPageGrid();
+            gameMsgDiv.innerText = "已清除当前选中顺序";
+        } else {
+            gameMsgDiv.innerText = "当前没有选中任何汉字";
+        }
+    }
+
+    // 更新下方序列显示
+    function updateCurrentSeqUI() {
+        const seqStr = currentSelection.map(i => i.char).join(' ');
+        currentSeqSpan.innerText = seqStr === "" ? "——" : seqStr;
+    }
+
+    // ★ 关键修改：获取当前页面要显示的汉字项，基于 gameItems 的全局顺序（稳定不变）
+    // 只过滤出属于当前页面 且 active === true 的项，并保持它们在 gameItems 中的原始顺序
+    function getCurrentPageItems() {
+        const vocabIdsInPage = GROUP_PAGES[currentPage];
+        const pageItems = [];
+        // 按照 gameItems 的全局顺序遍历，保持位置稳定
+        for (let item of gameItems) {
+            if (vocabIdsInPage.includes(item.vocabId) && item.active === true) {
+                pageItems.push(item);
+            }
+        }
+        return pageItems;
+    }
+
+    // 渲染当前页面汉字网格 (位置固定，仅消失的卡片不再显示)
+    function renderCurrentPageGrid() {
+        const itemsToShow = getCurrentPageItems(); // 已经是稳定顺序
+        charGridDiv.innerHTML = '';
+        
+        if (itemsToShow.length === 0) {
+            // 当前页面所有词汇都已配对完成，显示庆祝信息
+            const completeDiv = document.createElement('div');
+            completeDiv.style.gridColumn = "1/-1";
+            completeDiv.style.textAlign = "center";
+            completeDiv.style.padding = "30px";
+            completeDiv.style.fontSize = "1.2rem";
+            completeDiv.style.fontWeight = "bold";
+            completeDiv.innerText = "🎉 本页词语已全部配对！切换其他页面继续 🎉";
+            charGridDiv.appendChild(completeDiv);
+        } else {
+            for (let item of itemsToShow) {
+                const card = document.createElement('div');
+                card.className = 'char-card';
+                // 高亮：如果这个汉字在当前序列中
+                const isInCurrentSeq = currentSelection.some(sel => sel.id === item.id);
+                if (isInCurrentSeq) card.classList.add('selected-in-sequence');
+                card.innerText = item.char;
+                card.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    onCharClick(item);
+                });
+                charGridDiv.appendChild(card);
+            }
+        }
+    }
+
+    // 切换页面
+    function setPage(pageIndex) {
+        if (pageIndex === currentPage) return;
+        // 清空当前序列防止跨页面残留
+        currentSelection = [];
+        updateCurrentSeqUI();
+        currentPage = pageIndex;
+        renderCurrentPageGrid();
+        // 更新tab样式
+        document.querySelectorAll('.tab-btn').forEach((btn, idx) => {
+            if (idx === pageIndex) btn.classList.add('active');
+            else btn.classList.remove('active');
+        });
+        gameMsgDiv.innerText = `切换到第${pageIndex+1}页，继续组词吧 (汉字位置稳定)`;
+    }
+
+    // 构建分页tab UI
+    function buildTabs() {
+        pageTabsDiv.innerHTML = '';
+        for (let i = 0; i < GROUP_PAGES.length; i++) {
+            const btn = document.createElement('button');
+            btn.innerText = `第${i+1}页 · ${GROUP_PAGES[i].length}词`;
+            btn.classList.add('tab-btn');
+            if (i === currentPage) btn.classList.add('active');
+            btn.addEventListener('click', () => setPage(i));
+            pageTabsDiv.appendChild(btn);
+        }
+    }
+
+    // 重置整个游戏（重置数据、重新打乱全局顺序但之后保持稳定）
+    function resetGame() {
+        stopTimer();
+        initGameData();     // 重新生成打乱后的 gameItems（顺序重置）
+        currentSelection = [];
+        updateCurrentSeqUI();
+        currentPage = 0;
+        buildTabs();
+        renderCurrentPageGrid();
+        updateStatsUI();
+        gameCompleted = false;
+        gameMsgDiv.innerText = "游戏已重置！汉字顺序已重新洗牌，但本次游戏中位置不再改变。开始组词吧";
+        if (timerInterval) stopTimer();
+        startTimer();
+    }
+
+    // 初始化
+    function initGame() {
+        initGameData();
+        buildTabs();
+        renderCurrentPageGrid();
+        clearSeqBtn.addEventListener('click', clearSelection);
+        resetGameBtn.addEventListener('click', resetGame);
+    }
+
+    initGame();
+</script>
+</body>
+</html>
