@@ -362,3 +362,12 @@ if (lessonData.module_10_comprehension) {
         }
     });
 }
+
+// 全局/模块导出绑定（全兼容）
+window.LESSONS_DATA = window.LESSONS_DATA || {};
+window.LESSONS_DATA['hsk4-11'] = lessonData;
+window.lessonData = lessonData;
+
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = lessonData;
+}
