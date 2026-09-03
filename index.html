@@ -6,7 +6,6 @@
 <title>HSK学练平台 - 教师端</title>
 <script src="https://cdn.staticfile.net/vue/3.3.4/vue.global.prod.js"></script>
 <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
-<script src="lessonHSK4-11.js"></script>
 <style>
 :root {
   --primary: #3b82f6; --primary-hover: #2563eb;
@@ -149,11 +148,17 @@ h2.module-title { margin-top: 0; font-size: 22px; font-weight: 700; color: var(-
 .team-blue { background: #eff6ff; border: 1px solid #93c5fd; }
 .team-green { background: #f0fdf4; border: 1px solid #86efac; }
 .team-member { background: #fff; padding: 4px 10px; border-radius: 6px; font-size: 13px; font-weight: 600; box-shadow: var(--shadow-sm); }
+.loading-screen { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: #0f172a; color: #fff; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999; font-size: 20px; }
 </style>
 </head>
 <body>
 <div id="app">
-  <div class="sidebar" :class="{collapsed:isSidebarCollapsed, hidden:isSidebarHidden}">
+  <!-- 加载状态屏 -->
+  <div v-if="isLoading" class="loading-screen">
+    <div>⌛ 正在加载课程数据...</div>
+  </div>
+
+  <div v-else class="sidebar" :class="{collapsed:isSidebarCollapsed, hidden:isSidebarHidden}">
     <div class="teacher-logo"><h2>🀄 HSK学练平台</h2></div>
     <div class="sidebar-nav">
       <button class="nav-btn" :class="{active:currentModule==='vocab'}" @click="setModule('vocab')"><span>🔖</span><div class="nav-btn-text"><span class="nav-btn-cn">核心词汇</span><span class="nav-btn-en">Vocabulary</span></div></button>
@@ -171,13 +176,13 @@ h2.module-title { margin-top: 0; font-size: 22px; font-weight: 700; color: var(-
     <div class="sidebar-toggle" @click="isSidebarCollapsed=!isSidebarCollapsed">{{isSidebarCollapsed?'»':'«'}}</div>
   </div>
 
-  <div class="main-container" :class="{'sidebar-collapsed':isSidebarCollapsed,'sidebar-hidden':isSidebarHidden}">
+  <div v-if="!isLoading" class="main-container" :class="{'sidebar-collapsed':isSidebarCollapsed,'sidebar-hidden':isSidebarHidden}">
     <div class="top-bar">
       <div class="hamburger-menu" @click="isSidebarHidden=!isSidebarHidden">☰</div>
-      <h1 class="lesson-title-blue">{{classData.lesson}}</h1>
+      <h1 class="lesson-title-blue">{{classData.lesson || 'HSK 课程'}}</h1>
     </div>
 
-    <div v-if="currentModule==='grammar'" class="grammar-nav">
+    <div v-if="currentModule==='grammar' && classData.module_3_grammar" class="grammar-nav">
       <button v-for="(gp,idx) in classData.module_3_grammar.grammar_points" :key="idx" class="grammar-tab" :class="{active:grammarPointIndex===idx}" @click="changeGrammarPoint(idx)">{{gp.grammar_point_name}}</button>
     </div>
 
@@ -188,7 +193,7 @@ h2.module-title { margin-top: 0; font-size: 22px; font-weight: 700; color: var(-
     <div class="main-content"><div class="panel-container">
 
       <!-- 拼音配对 -->
-      <div class="panel" v-if="currentActivity==='v1_pinyin_match'">
+      <div class="panel" v-if="currentActivity==='v1_pinyin_match' && classData.module_1_vocab">
         <h2 class="module-title">拼音汉字配对（第{{pinyinMatch.round+1}}/{{classData.module_1_vocab.pinyin_match.length}}轮）</h2>
         <div class="matching-grid">
           <div><h3>汉字</h3><div v-for="item in pinyinMatch.currentHanzi" :key="item.id" class="matching-item" :class="{selected:pinyinMatch.selectedHanzi?.id===item.id,wrong:item.isWrong}" @click="selectHanzi(item)">{{item.text}}</div></div>
@@ -199,7 +204,7 @@ h2.module-title { margin-top: 0; font-size: 22px; font-weight: 700; color: var(-
 
       <!-- 词语搭配 -->
       <div class="panel" v-if="currentActivity==='v2_collocation_match'">
-        <h2 class="module-title">词语搭配（第{{collocationMatch.round+1}}/{{collocationMatch.chunks.length}}轮）</h2>
+        <h2 class="module-title">词语搭配（第{{collocationMatch.round+1}}/{{collocationMatch.chunks.length || 1}}轮）</h2>
         <div class="matching-grid">
           <div>
             <h3>搭配词A</h3>
@@ -217,7 +222,7 @@ h2.module-title { margin-top: 0; font-size: 22px; font-weight: 700; color: var(-
       </div>
 
       <!-- 汉字配对 -->
-      <div class="panel" v-if="currentActivity==='v3_char_match'">
+      <div class="panel" v-if="currentActivity==='v3_char_match' && classData.module_1_vocab">
         <h2 class="module-title">汉字配对游戏（第{{charMatch.round+1}}/{{classData.module_1_vocab.char_match.length}}轮）</h2>
         <div style="display:flex; flex-wrap:wrap; gap:12px; justify-content:center; max-width:600px; margin:0 auto;"><div v-for="c in charMatch.charItems" :key="c.id" class="chunk-btn" :style="{visibility:!c.active?'hidden':'visible'}" @click="onCharClick(c)">{{c.char}}</div></div>
         <div style="background:var(--bg-main); margin:20px auto; border-radius:var(--radius-md); padding:12px 20px; display:flex; align-items:center; gap:12px; max-width:400px;"><span style="font-size:20px; font-weight:700; flex-grow:1;">{{charMatch.selection.map(c=>c.char).join('')||'请点击汉字...'}}</span><button @click="clearCharSelection" class="next-btn" style="margin:0; background:var(--warning);">清除</button></div>
@@ -233,7 +238,7 @@ h2.module-title { margin-top: 0; font-size: 22px; font-weight: 700; color: var(-
       </div>
 
       <!-- 词义测验 -->
-      <div class="panel" v-if="currentActivity==='v5_vocab_quiz'">
+      <div class="panel" v-if="currentActivity==='v5_vocab_quiz' && classData.module_9_vocab_practice">
         <h2 class="module-title">词义搭配测验（{{vocabPractice.index+1}}/{{classData.module_9_vocab_practice.length}}）</h2>
         <div style="font-size:20px; line-height:1.6; background:var(--bg-main); padding:20px; border-radius:var(--radius-md); margin-bottom:20px;" v-html="currentVocabQuestion.question.replace('____',`<strong style='color:var(--primary); border-bottom:2px solid var(--primary); padding:0 8px;'>${vocabPractice.selectedOption||'____'}</strong>`)"></div>
         <div style="display:flex; justify-content:center; gap:12px; flex-wrap:wrap;">
@@ -244,7 +249,7 @@ h2.module-title { margin-top: 0; font-size: 22px; font-weight: 700; color: var(-
 
       <!-- 中俄配对 -->
       <div class="panel" v-if="currentActivity==='v6_translate_match'">
-        <h2 class="module-title">中俄配对（第{{ruMatch.round+1}}/{{ruMatch.totalRounds}}轮）</h2>
+        <h2 class="module-title">中俄配对（第{{ruMatch.round+1}}/{{ruMatch.totalRounds || 1}}轮）</h2>
         <div class="matching-grid">
           <div><h3>中文</h3><div v-for="item in ruMatch.currentZh" :key="item.id" class="matching-item" :class="{selected:ruMatch.selectedZh?.id===item.id,wrong:item.isWrong}" @click="selectRuZh(item,'zh')">{{item.text}}</div></div>
           <div><h3>俄语</h3><div v-for="item in ruMatch.currentRu" :key="item.id" class="matching-item" :class="{selected:ruMatch.selectedRu?.id===item.id,wrong:item.isWrong}" @click="selectRuZh(item,'ru')">{{item.text}}</div></div>
@@ -271,28 +276,28 @@ h2.module-title { margin-top: 0; font-size: 22px; font-weight: 700; color: var(-
       <div class="panel" v-if="currentActivity==='gr3_scenario'"><h2 class="module-title">情境演练（{{g3Index+1}}/{{currentGrammarData.level_3_scenario?.length||0}}）</h2><div style="text-align:left; background:#fff7ed; border-left:4px solid var(--warning); padding:20px; border-radius:var(--radius-md);"><h2 style="margin-top:0; font-size:20px;">{{currentG3Data.scenario}}</h2><p style="color:var(--text-muted); font-style:italic; margin:0;">{{currentG3Data.en_scenario}}</p></div><div v-if="showG3Ans" style="color:var(--success); font-weight:700; font-size:18px; margin-top:20px; background:#ecfdf5; padding:14px; border-radius:var(--radius-md);">💡 参考：{{currentG3Data.reference}}</div><div class="interaction-bar"><button class="next-btn" @click="showG3Ans=true" v-if="!showG3Ans" style="background:#fff; color:var(--warning); border:1px solid var(--warning);">👀 显示参考</button><button class="next-btn" @click="nextG3" v-if="showG3Ans">⏭️ 下一题</button></div></div>
 
       <!-- 语段排序 -->
-      <div class="panel" v-if="currentActivity==='t1_sorting'"><h2 class="module-title">语段排序（{{sorting.index+1}}/{{classData.module_4_text.level_1_sorting.length}}）</h2><div v-for="(item,idx) in sorting.items" :key="item.tag+idx" style="background:var(--bg-main); border:1px solid var(--border-color); border-radius:var(--radius-md); padding:14px; margin-bottom:10px; font-size:16px; display:flex; gap:12px; align-items:center; cursor:grab;" draggable="true" @dragstart="dragStart(idx)" @dragover.prevent @drop="dropItem(idx)"><span style="font-weight:700; color:var(--primary);">{{item.tag}}</span><span>{{item.content}}</span></div><div v-if="sorting.feedback" style="margin-top:16px; padding:12px; border-radius:var(--radius-md); font-weight:700;" :style="sorting.isCorrect ? {background:'#ecfdf5',color:'var(--success)'} : {background:'#fef2f2',color:'var(--danger)'}">{{sorting.feedback}}<div v-if="!sorting.isCorrect" style="text-align:left; margin-top:8px; font-size:14px; color:var(--text-main); font-weight:normal;">{{currentSortingData.explanation}}</div></div><div class="interaction-bar"><button v-if="!sorting.feedback" class="next-btn" @click="checkSortingOrder">检查答案</button><button v-if="sorting.feedback" class="next-btn" @click="nextSortingItem">下一题</button></div></div>
+      <div class="panel" v-if="currentActivity==='t1_sorting' && classData.module_4_text"><h2 class="module-title">语段排序（{{sorting.index+1}}/{{classData.module_4_text.level_1_sorting.length}}）</h2><div v-for="(item,idx) in sorting.items" :key="item.tag+idx" style="background:var(--bg-main); border:1px solid var(--border-color); border-radius:var(--radius-md); padding:14px; margin-bottom:10px; font-size:16px; display:flex; gap:12px; align-items:center; cursor:grab;" draggable="true" @dragstart="dragStart(idx)" @dragover.prevent @drop="dropItem(idx)"><span style="font-weight:700; color:var(--primary);">{{item.tag}}</span><span>{{item.content}}</span></div><div v-if="sorting.feedback" style="margin-top:16px; padding:12px; border-radius:var(--radius-md); font-weight:700;" :style="sorting.isCorrect ? {background:'#ecfdf5',color:'var(--success)'} : {background:'#fef2f2',color:'var(--danger)'}">{{sorting.feedback}}<div v-if="!sorting.isCorrect" style="text-align:left; margin-top:8px; font-size:14px; color:var(--text-main); font-weight:normal;">{{currentSortingData.explanation}}</div></div><div class="interaction-bar"><button v-if="!sorting.feedback" class="next-btn" @click="checkSortingOrder">检查答案</button><button v-if="sorting.feedback" class="next-btn" @click="nextSortingItem">下一题</button></div></div>
 
       <!-- 课文理解 -->
-      <div class="panel" v-if="currentActivity==='t2_comprehension'"><h2 class="module-title">📖 {{currentCompSection.sectionTitle}}（{{compQuiz.qIdx+1}}/{{currentCompSection.questions.length}}）</h2><div style="background:var(--bg-main); padding:16px; border-radius:var(--radius-md); text-align:left; font-size:15px; line-height:1.6; margin-bottom:20px; white-space:pre-line;">{{currentCompSection.textContext}}</div><div style="font-size:18px; font-weight:700; margin-bottom:16px;">{{currentCompQuestion.question}}</div><div style="display:flex; flex-direction:column; gap:8px; max-width:500px; margin:0 auto;"><button v-for="opt in currentCompQuestion.options" :key="opt" class="chunk-btn" :style="compQuiz.showAnswer ? (opt===currentCompQuestion.answer ? {background:'#d1fae5',borderColor:'var(--success)',color:'#065f46'} : (compQuiz.selectedOption===opt ? {background:'#fee2e2',borderColor:'var(--danger)',color:'#991b1b'} : {})) : {}" @click="checkCompQuiz(opt)" :disabled="compQuiz.showAnswer">{{opt}}</button></div><div class="interaction-bar"><button v-if="compQuiz.showAnswer" class="next-btn" @click="nextCompQuiz">下一题</button></div></div>
+      <div class="panel" v-if="currentActivity==='t2_comprehension' && classData.module_10_comprehension"><h2 class="module-title">📖 {{currentCompSection.sectionTitle}}（{{compQuiz.qIdx+1}}/{{currentCompSection.questions.length}}）</h2><div style="background:var(--bg-main); padding:16px; border-radius:var(--radius-md); text-align:left; font-size:15px; line-height:1.6; margin-bottom:20px; white-space:pre-line;">{{currentCompSection.textContext}}</div><div style="font-size:18px; font-weight:700; margin-bottom:16px;">{{currentCompQuestion.question}}</div><div style="display:flex; flex-direction:column; gap:8px; max-width:500px; margin:0 auto;"><button v-for="opt in currentCompQuestion.options" :key="opt" class="chunk-btn" :style="compQuiz.showAnswer ? (opt===currentCompQuestion.answer ? {background:'#d1fae5',borderColor:'var(--success)',color:'#065f46'} : (compQuiz.selectedOption===opt ? {background:'#fee2e2',borderColor:'var(--danger)',color:'#991b1b'} : {})) : {}" @click="checkCompQuiz(opt)" :disabled="compQuiz.showAnswer">{{opt}}</button></div><div class="interaction-bar"><button v-if="compQuiz.showAnswer" class="next-btn" @click="nextCompQuiz">下一题</button></div></div>
 
       <!-- 跟读练习 -->
-      <div class="panel" v-if="currentActivity==='r1_repeat'"><h2 class="module-title">🗣️ 跟读练习</h2><div style="display:flex; flex-direction:column; gap:12px; max-width:700px; margin:0 auto;"><div style="display:flex; align-items:center; justify-content:space-between; gap:12px; background:var(--bg-main); padding:12px 16px; border-radius:var(--radius-md); border:1px solid var(--border-color);" v-for="(s,index) in classData.module_4_repetition.sentences" :key="index"><button class="next-btn" style="margin:0; padding:6px 12px; border-radius:50%;" @click="playSentenceAudio(s)">▶</button><span style="flex-grow:1; font-size:18px; font-weight:600; text-align:left;" :style="{visibility:repetitionState.visible[index]?'visible':'hidden'}">{{s}}</span><button class="next-btn" style="margin:0; background:var(--warning);" @click="toggleSentenceVisibility(index)">{{repetitionState.visible[index]?'隐藏':'显示'}}</button></div></div></div>
+      <div class="panel" v-if="currentActivity==='r1_repeat' && classData.module_4_repetition"><h2 class="module-title">🗣️ 跟读练习</h2><div style="display:flex; flex-direction:column; gap:12px; max-width:700px; margin:0 auto;"><div style="display:flex; align-items:center; justify-content:space-between; gap:12px; background:var(--bg-main); padding:12px 16px; border-radius:var(--radius-md); border:1px solid var(--border-color);" v-for="(s,index) in classData.module_4_repetition.sentences" :key="index"><button class="next-btn" style="margin:0; padding:6px 12px; border-radius:50%;" @click="playSentenceAudio(s)">▶</button><span style="flex-grow:1; font-size:18px; font-weight:600; text-align:left;" :style="{visibility:repetitionState.visible[index]?'visible':'hidden'}">{{s}}</span><button class="next-btn" style="margin:0; background:var(--warning);" @click="toggleSentenceVisibility(index)">{{repetitionState.visible[index]?'隐藏':'显示'}}</button></div></div></div>
 
       <!-- 找茬大师 -->
-      <div class="panel" v-if="currentActivity==='es1_find_error'"><h2 class="module-title">🧐 找茬大师（第{{errorSpot.index+1}}/{{classData.module_7_find_error.questions.length}}）</h2><div style="font-size:22px; font-weight:600; padding:24px 16px; margin:20px auto; background:var(--bg-main); border-left:4px solid var(--warning); border-radius:var(--radius-md);">{{currentErrorSpotData.sentence}}</div><div v-if="errorSpot.showAnswer" style="background:var(--bg-main); border:1px solid var(--border-color); border-radius:var(--radius-md); padding:16px; text-align:left; line-height:1.6; font-size:15px;"><p style="margin:0 0 8px;"><strong>原句：</strong><span style="text-decoration:line-through; color:var(--danger);">{{currentErrorSpotData.sentence}}</span></p><p style="margin:0 0 8px;"><strong>订正：</strong><span>{{currentErrorSpotData.sentence.replace(currentErrorSpotData.error,'')}}</span><span style="color:var(--success); font-weight:bold;">{{currentErrorSpotData.correct}}</span></p><hr style="border:none; border-top:1px solid var(--border-color); margin:8px 0;"><div style="color:var(--text-muted);">{{currentErrorSpotData.explanation}}</div></div><div class="interaction-bar"><button class="next-btn" @click="errorSpot.showAnswer=!errorSpot.showAnswer" style="background:var(--warning);">{{errorSpot.showAnswer?'隐藏答案':'揭晓答案'}}</button><button v-if="errorSpot.showAnswer" class="next-btn" @click="nextErrorSpot">下一题</button></div></div>
+      <div class="panel" v-if="currentActivity==='es1_find_error' && classData.module_7_find_error"><h2 class="module-title">🧐 找茬大师（第{{errorSpot.index+1}}/{{classData.module_7_find_error.questions.length}}）</h2><div style="font-size:22px; font-weight:600; padding:24px 16px; margin:20px auto; background:var(--bg-main); border-left:4px solid var(--warning); border-radius:var(--radius-md);">{{currentErrorSpotData.sentence}}</div><div v-if="errorSpot.showAnswer" style="background:var(--bg-main); border:1px solid var(--border-color); border-radius:var(--radius-md); padding:16px; text-align:left; line-height:1.6; font-size:15px;"><p style="margin:0 0 8px;"><strong>原句：</strong><span style="text-decoration:line-through; color:var(--danger);">{{currentErrorSpotData.sentence}}</span></p><p style="margin:0 0 8px;"><strong>订正：</strong><span>{{currentErrorSpotData.sentence.replace(currentErrorSpotData.error,'')}}</span><span style="color:var(--success); font-weight:bold;">{{currentErrorSpotData.correct}}</span></p><hr style="border:none; border-top:1px solid var(--border-color); margin:8px 0;"><div style="color:var(--text-muted);">{{currentErrorSpotData.explanation}}</div></div><div class="interaction-bar"><button class="next-btn" @click="errorSpot.showAnswer=!errorSpot.showAnswer" style="background:var(--warning);">{{errorSpot.showAnswer?'隐藏答案':'揭晓答案'}}</button><button v-if="errorSpot.showAnswer" class="next-btn" @click="nextErrorSpot">下一题</button></div></div>
 
       <!-- 极限挑战 -->
-      <div class="panel" v-if="currentActivity==='c1_extreme_challenge'"><h2 class="module-title">🔥 极限挑战（第{{challenge.index+1}}/{{classData.module_6_challenge.challenge_sets.length}}轮）</h2><div v-if="challenge.isStarted||challenge.areKeywordsShown"><div style="display:flex; justify-content:center; gap:16px; margin:16px 0;"><div style="background:#d1fae5; color:#065f46; font-size:22px; font-weight:800; padding:12px 24px; border-radius:var(--radius-md);" v-for="w in currentChallengeData.keywords" :key="w">{{w}}</div></div><div v-if="challenge.isStarted" style="font-size:72px; font-weight:900; color:var(--danger); margin:10px 0;">{{challenge.timer}}</div></div><div v-if="!challenge.areKeywordsShown&&!challenge.isStarted" class="blind-box-container"><div class="blind-box">?</div><div class="blind-box">?</div><div class="blind-box">?</div></div><div v-if="challenge.showReference" style="margin-top:20px; background:var(--bg-main); border:1px solid var(--border-color); border-radius:var(--radius-md); padding:16px; text-align:left;"><h3 style="margin-top:0; color:var(--primary); font-size:16px;">例文</h3><p style="font-size:15px; margin-bottom:12px;">{{currentChallengeData.framework}}</p><h3 style="margin-top:0; color:var(--primary); font-size:16px;">翻译</h3><p style="font-size:14px; color:var(--text-muted); margin:0;"><em>{{currentChallengeData.translation}}</em></p></div><div class="interaction-bar"><button v-if="!challenge.areKeywordsShown" class="next-btn" @click="challenge.areKeywordsShown=true">查看词语</button><button v-if="challenge.areKeywordsShown&&!challenge.isStarted" class="next-btn" @click="startChallengeTimer" style="background:var(--danger);">开始倒计时</button><button v-if="challenge.isStarted" class="next-btn" @click="stopChallengeTimer" style="background:var(--warning);">停止</button><button class="next-btn" @click="challenge.showReference=!challenge.showReference">{{challenge.showReference?'隐藏例文':'显示例文'}}</button><button class="next-btn" @click="nextChallenge">下一轮</button></div></div>
+      <div class="panel" v-if="currentActivity==='c1_extreme_challenge' && classData.module_6_challenge"><h2 class="module-title">🔥 极限挑战（第{{challenge.index+1}}/{{classData.module_6_challenge.challenge_sets.length}}轮）</h2><div v-if="challenge.isStarted||challenge.areKeywordsShown"><div style="display:flex; justify-content:center; gap:16px; margin:16px 0;"><div style="background:#d1fae5; color:#065f46; font-size:22px; font-weight:800; padding:12px 24px; border-radius:var(--radius-md);" v-for="w in currentChallengeData.keywords" :key="w">{{w}}</div></div><div v-if="challenge.isStarted" style="font-size:72px; font-weight:900; color:var(--danger); margin:10px 0;">{{challenge.timer}}</div></div><div v-if="!challenge.areKeywordsShown&&!challenge.isStarted" class="blind-box-container"><div class="blind-box">?</div><div class="blind-box">?</div><div class="blind-box">?</div></div><div v-if="challenge.showReference" style="margin-top:20px; background:var(--bg-main); border:1px solid var(--border-color); border-radius:var(--radius-md); padding:16px; text-align:left;"><h3 style="margin-top:0; color:var(--primary); font-size:16px;">例文</h3><p style="font-size:15px; margin-bottom:12px;">{{currentChallengeData.framework}}</p><h3 style="margin-top:0; color:var(--primary); font-size:16px;">翻译</h3><p style="font-size:14px; color:var(--text-muted); margin:0;"><em>{{currentChallengeData.translation}}</em></p></div><div class="interaction-bar"><button v-if="!challenge.areKeywordsShown" class="next-btn" @click="challenge.areKeywordsShown=true">查看词语</button><button v-if="challenge.areKeywordsShown&&!challenge.isStarted" class="next-btn" @click="startChallengeTimer" style="background:var(--danger);">开始倒计时</button><button v-if="challenge.isStarted" class="next-btn" @click="stopChallengeTimer" style="background:var(--warning);">停止</button><button class="next-btn" @click="challenge.showReference=!challenge.showReference">{{challenge.showReference?'隐藏例文':'显示例文'}}</button><button class="next-btn" @click="nextChallenge">下一轮</button></div></div>
 
       <!-- 实时词云 -->
-      <div class="panel" v-if="currentActivity==='wc_live'" style="height:500px; overflow:hidden; background:#0f172a; position:relative; border:none; border-radius:var(--radius-lg);"><div style="position:absolute; top:20px; left:20px; z-index:10; text-align:left;"><h2 style="color:#fff; margin:0; font-size:20px;">{{classData.module_5_wordcloud.title}}</h2><p style="color:#94a3b8; font-size:13px; margin-top:4px;">{{classData.module_5_wordcloud.hint}}</p></div><div style="width:100%; height:100%; position:relative;"><div v-for="word in wordCloudList" :key="word.text" style="position:absolute; white-space:nowrap; transition:all 0.5s;" :style="{fontSize:word.size+'px', color:word.color, left:word.x+'%', top:word.y+'%', opacity:word.opacity}">{{word.text}}<span v-if="word.count>1" style="font-size:12px; background:var(--warning); color:#fff; padding:2px 6px; border-radius:10px; margin-left:4px;">{{word.count}}</span></div></div><div class="interaction-bar" style="position:absolute; bottom:20px; width:100%;"><button class="next-btn" @click="wordCloudList=[]" style="background:var(--danger);">🗑️ 清空词云</button></div></div>
+      <div class="panel" v-if="currentActivity==='wc_live' && classData.module_5_wordcloud" style="height:500px; overflow:hidden; background:#0f172a; position:relative; border:none; border-radius:var(--radius-lg);"><div style="position:absolute; top:20px; left:20px; z-index:10; text-align:left;"><h2 style="color:#fff; margin:0; font-size:20px;">{{classData.module_5_wordcloud.title}}</h2><p style="color:#94a3b8; font-size:13px; margin-top:4px;">{{classData.module_5_wordcloud.hint}}</p></div><div style="width:100%; height:100%; position:relative;"><div v-for="word in wordCloudList" :key="word.text" style="position:absolute; white-space:nowrap; transition:all 0.5s;" :style="{fontSize:word.size+'px', color:word.color, left:word.x+'%', top:word.y+'%', opacity:word.opacity}">{{word.text}}<span v-if="word.count>1" style="font-size:12px; background:var(--warning); color:#fff; padding:2px 6px; border-radius:10px; margin-left:4px;">{{word.count}}</span></div></div><div class="interaction-bar" style="position:absolute; bottom:20px; width:100%;"><button class="next-btn" @click="wordCloudList=[]" style="background:var(--danger);">🗑️ 清空词云</button></div></div>
 
       <!-- 随机点名 -->
       <div class="panel" v-if="currentActivity==='tools_picker'"><h2 class="module-title">随机点名</h2><div style="font-size:56px; font-weight:900; color:var(--primary); margin:30px 0; padding:24px; background:var(--bg-main); border-radius:var(--radius-lg); border:2px dashed var(--border-color);">{{pickedStudent}}</div><button class="next-btn" @click="startPicker" :disabled="isSpinning">🎲 开始抽取</button></div>
 
       <!-- 诸神之战 -->
-      <div class="panel" v-if="currentActivity==='j1_board'" style="background:transparent; box-shadow:none; border:none; padding:0;">
+      <div class="panel" v-if="currentActivity==='j1_board' && classData.module_8_jeopardy" style="background:transparent; box-shadow:none; border:none; padding:0;">
         <div v-if="jeopardy.phase==='setup'">
           <h2 class="module-title">🧑‍🤝‍🧑 已扫码学生名单（当前：{{ activeStudents.length }}人）</h2>
           <div class="roster-grid">
@@ -387,17 +392,18 @@ h2.module-title { margin-top: 0; font-size: 22px; font-weight: 700; color: var(-
 
 <script>
 const { createApp, ref, computed, watch, onMounted, reactive } = Vue;
-const ROOM_CHANNEL = 'wanglaoshi/hsklesson/room_A';
 
 createApp({
   setup() {
-    const classData = ref(lessonData);
+    const isLoading = ref(true);
+    const classData = ref({});
     const currentModule = ref('vocab');
     const currentActivity = ref('v1_pinyin_match');
     const isLiveMode = ref(false);
     const isSidebarCollapsed = ref(false);
     const isSidebarHidden = ref(false);
     let client = null;
+    let ROOM_CHANNEL = 'wanglaoshi/hsklesson/room_default';
 
     const playSound = (type) => {
       try {
@@ -452,7 +458,7 @@ createApp({
 
     // 1. 拼音配对
     const pinyinMatch = reactive({ round:0, currentHanzi:[], currentPinyin:[], selectedHanzi:null, selectedPinyin:null, isRoundComplete: computed(()=>pinyinMatch.currentHanzi.length===0) });
-    function setupPinyinMatchRound(i){ const rd=classData.value.module_1_vocab.pinyin_match[i]; if(!rd)return; const items=rd.map((w,id)=>({id,word:w,pinyin:classData.value.pinyin_map[w]})); pinyinMatch.currentHanzi=items.map(x=>({id:x.id,text:x.word,isWrong:false})).sort(()=>Math.random()-.5); pinyinMatch.currentPinyin=items.map(x=>({id:x.id,text:x.pinyin,isWrong:false})).sort(()=>Math.random()-.5); pinyinMatch.selectedHanzi=pinyinMatch.selectedPinyin=null; }
+    function setupPinyinMatchRound(i){ if(!classData.value.module_1_vocab) return; const rd=classData.value.module_1_vocab.pinyin_match[i]; if(!rd)return; const items=rd.map((w,id)=>({id,word:w,pinyin:classData.value.pinyin_map[w]})); pinyinMatch.currentHanzi=items.map(x=>({id:x.id,text:x.word,isWrong:false})).sort(()=>Math.random()-.5); pinyinMatch.currentPinyin=items.map(x=>({id:x.id,text:x.pinyin,isWrong:false})).sort(()=>Math.random()-.5); pinyinMatch.selectedHanzi=pinyinMatch.selectedPinyin=null; }
     function selectHanzi(h){ pinyinMatch.selectedHanzi=h; if(pinyinMatch.selectedPinyin)checkPinyinMatch(); }
     function selectPinyin(p){ pinyinMatch.selectedPinyin=p; if(pinyinMatch.selectedHanzi)checkPinyinMatch(); }
     function checkPinyinMatch(){ 
@@ -462,7 +468,7 @@ createApp({
         playSound('wrong'); pinyinMatch.selectedHanzi.isWrong=pinyinMatch.selectedPinyin.isWrong=true; setTimeout(()=>{ if(pinyinMatch.selectedHanzi)pinyinMatch.selectedHanzi.isWrong=false; if(pinyinMatch.selectedPinyin)pinyinMatch.selectedPinyin.isWrong=false; pinyinMatch.selectedHanzi=pinyinMatch.selectedPinyin=null; },500); 
       } 
     }
-    function nextPinyinMatchRound(){ pinyinMatch.round=(pinyinMatch.round+1)%classData.value.module_1_vocab.pinyin_match.length; setupPinyinMatchRound(pinyinMatch.round); }
+    function nextPinyinMatchRound(){ pinyinMatch.round=(pinyinMatch.round+1)%(classData.value.module_1_vocab?.pinyin_match.length || 1); setupPinyinMatchRound(pinyinMatch.round); }
 
     // 2. 词语搭配
     const collocationMatch = reactive({ round:0, chunks:[], currentLeft:[], currentRight:[], selectedItem:null, isRoundComplete: computed(()=>collocationMatch.currentLeft.length>0 && collocationMatch.currentLeft.every(i=>i.isCorrect)) });
@@ -496,6 +502,7 @@ createApp({
     // 3. 汉字配对
     const charMatch = reactive({ round:0, charItems:[], selection:[], matchedCount:0, totalWordsInRound:0, isRoundComplete: computed(()=>charMatch.totalWordsInRound>0&&charMatch.matchedCount===charMatch.totalWordsInRound) });
     function setupCharMatchRound(i){ 
+      if(!classData.value.module_1_vocab) return;
       const words=classData.value.module_1_vocab.char_match[i]; if(!words)return; 
       charMatch.totalWordsInRound=words.length; charMatch.matchedCount=0; charMatch.selection=[]; 
       let items=[]; 
@@ -515,7 +522,7 @@ createApp({
       } 
     }
     function clearCharSelection(){ charMatch.selection=[]; }
-    function nextCharMatchRound(){ charMatch.round=(charMatch.round+1)%classData.value.module_1_vocab.char_match.length; setupCharMatchRound(charMatch.round); }
+    function nextCharMatchRound(){ charMatch.round=(charMatch.round+1)%(classData.value.module_1_vocab?.char_match.length || 1); setupCharMatchRound(charMatch.round); }
 
     watch(currentActivity, (v) => { if (v === 'v3_char_match' && charMatch.charItems.length === 0) setupCharMatchRound(0); });
 
@@ -523,14 +530,14 @@ createApp({
     const guessGame = reactive({ allWords:[], currentWordIndex:-1, correctList:[], wrongList:[], time:180, timer:null, isActive:false });
     const formattedTime = computed(()=>`${String(Math.floor(guessGame.time/60)).padStart(2,'0')}:${String(guessGame.time%60).padStart(2,'0')}`);
     const currentGuessWord = computed(()=>guessGame.allWords[guessGame.currentWordIndex]||null);
-    function startGuessGame(){ clearInterval(guessGame.timer); guessGame.allWords=[...classData.value.module_1_vocab.guess_words].sort(()=>Math.random()-.5); guessGame.currentWordIndex=0; guessGame.correctList=[]; guessGame.wrongList=[]; guessGame.time=180; guessGame.isActive=true; guessGame.timer=setInterval(()=>{ guessGame.time--; if(guessGame.time<=0){ clearInterval(guessGame.timer); guessGame.isActive=false; } },1000); }
+    function startGuessGame(){ clearInterval(guessGame.timer); guessGame.allWords=[...(classData.value.module_1_vocab?.guess_words || [])].sort(()=>Math.random()-.5); guessGame.currentWordIndex=0; guessGame.correctList=[]; guessGame.wrongList=[]; guessGame.time=180; guessGame.isActive=true; guessGame.timer=setInterval(()=>{ guessGame.time--; if(guessGame.time<=0){ clearInterval(guessGame.timer); guessGame.isActive=false; } },1000); }
     function recordGuess(ok){ if(!guessGame.isActive||!currentGuessWord.value)return; if(ok) { playSound('correct'); guessGame.correctList.push(currentGuessWord.value); } else { playSound('wrong'); guessGame.wrongList.push(currentGuessWord.value); } if(guessGame.currentWordIndex<guessGame.allWords.length-1)guessGame.currentWordIndex++; else{ clearInterval(guessGame.timer); guessGame.isActive=false; } }
 
     // 5. 词义测验
     const vocabPractice = reactive({ index:0, showAnswer:false, selectedOption:'' });
-    const currentVocabQuestion = computed(()=>classData.value.module_9_vocab_practice[vocabPractice.index] || {question:'', options:[], answer:''});
+    const currentVocabQuestion = computed(()=>(classData.value.module_9_vocab_practice || [])[vocabPractice.index] || {question:'', options:[], answer:''});
     function checkVocabPractice(opt){ vocabPractice.selectedOption=opt; vocabPractice.showAnswer=true; if(opt === currentVocabQuestion.value.answer) playSound('correct'); else playSound('wrong'); }
-    function nextVocabPractice(){ vocabPractice.index=(vocabPractice.index+1)%classData.value.module_9_vocab_practice.length; vocabPractice.showAnswer=false; vocabPractice.selectedOption=''; }
+    function nextVocabPractice(){ vocabPractice.index=(vocabPractice.index+1)%(classData.value.module_9_vocab_practice?.length || 1); vocabPractice.showAnswer=false; vocabPractice.selectedOption=''; }
 
     // 6. 中俄配对
     const ruMatch = reactive({ round:0, chunks:[], totalRounds:0, currentZh:[], currentRu:[], selectedZh:null, selectedRu:null, isRoundComplete: computed(()=>ruMatch.currentZh.length===0&&ruMatch.totalRounds>0) });
@@ -547,25 +554,31 @@ createApp({
     function nextRuMatchRound(){ ruMatch.round=(ruMatch.round+1)%ruMatch.totalRounds; setupRuMatchRound(); }
 
     // 7. 看图猜词 / 炸弹
-    const bombWords = ref((classData.value.module_2_vocab_drill?.word_bomb||[]).map(w=>({...w,status:'hidden',timeLeft:100})));
+    const bombWords = ref([]);
     let bombTimer=null;
+    function initBombWords() {
+      bombWords.value = (classData.value.module_2_vocab_drill?.word_bomb||[]).map(w=>({...w,status:'hidden',timeLeft:100}));
+    }
     function handleBombClick(word){ if(word.status==='safe')return; if(word.status==='hidden'){ bombWords.value.forEach(w=>{if(w.status==='active')w.timeLeft=0;}); clearInterval(bombTimer); word.status='active'; word.timeLeft=100; bombTimer=setInterval(()=>{ word.timeLeft-=1; if(word.timeLeft<=0){ clearInterval(bombTimer); playSound('wrong'); } },30); } else if(word.status==='active'){ clearInterval(bombTimer); playSound('correct'); word.status='safe'; } }
     function resetBomb(){ clearInterval(bombTimer); bombWords.value.forEach(w=>{w.status='hidden';w.timeLeft=100;}); }
 
     // 8. 抢答盖板
-    const guessWordsList = ref((classData.value.module_2_vocab_drill?.guess_words||[]).map(w=>({...w,revealed:false})));
+    const guessWordsList = ref([]);
+    function initGuessWordsList() {
+      guessWordsList.value = (classData.value.module_2_vocab_drill?.guess_words||[]).map(w=>({...w,revealed:false}));
+    }
     function toggleGuessWord(i){ guessWordsList.value[i].revealed=!guessWordsList.value[i].revealed; }
     function resetGuessWords(){ guessWordsList.value.forEach(w=>w.revealed=false); }
 
     // 9. 盲盒造句
     const v3Index = ref(0); const currentBlindBox = ref([]);
-    watch(v3Index, ()=>{ const list=classData.value.module_2_vocab_drill?.blind_box_spinner||[]; if(list.length)currentBlindBox.value=(list[v3Index.value]?.words||[]).map(w=>({text:w.text,opened:false})); }, {immediate:true});
+    watch(v3Index, ()=>{ const list=classData.value.module_2_vocab_drill?.blind_box_spinner||[]; if(list.length)currentBlindBox.value=(list[v3Index.value]?.words||[]).map(w=>({text:w.text,opened:false})); });
     function openBox(box){ box.opened=true; playSound('correct'); }
     function nextV3(){ const list=classData.value.module_2_vocab_drill?.blind_box_spinner||[]; if(list.length)v3Index.value=(v3Index.value+1)%list.length; }
 
     // 10. 语法模块
     const grammarPointIndex = ref(0);
-    const currentGrammarData = computed(()=>{ const arr=classData.value.module_3_grammar.grammar_points||[]; return arr.length?arr[grammarPointIndex.value].levels:{}; });
+    const currentGrammarData = computed(()=>{ const arr=classData.value.module_3_grammar?.grammar_points||[]; return arr.length?arr[grammarPointIndex.value].levels:{}; });
     function changeGrammarPoint(idx){ grammarPointIndex.value=idx; g1Index.value=0; g2Index.value=0; g3Index.value=0; }
 
     const g1Index = ref(0);
@@ -591,18 +604,18 @@ createApp({
 
     // 11. 篇章与阅读
     const sorting = reactive({ index:0, items:[], feedback:'', isCorrect:false, dragIdx:null });
-    const currentSortingData = computed(()=>classData.value.module_4_text.level_1_sorting[sorting.index] || {shuffled_items:[], correct_order:[], explanation:''});
-    watch(()=>sorting.index, (ni)=>{ const q=classData.value.module_4_text.level_1_sorting[ni]; if(q){ sorting.items=[...q.shuffled_items].sort(()=>.5-Math.random()); sorting.feedback=''; sorting.isCorrect=false; } }, {immediate:true});
+    const currentSortingData = computed(()=>(classData.value.module_4_text?.level_1_sorting || [])[sorting.index] || {shuffled_items:[], correct_order:[], explanation:''});
+    watch(()=>sorting.index, (ni)=>{ const q=classData.value.module_4_text?.level_1_sorting[ni]; if(q){ sorting.items=[...q.shuffled_items].sort(()=>.5-Math.random()); sorting.feedback=''; sorting.isCorrect=false; } });
     function dragStart(i){ sorting.dragIdx=i; }
     function dropItem(i){ if(sorting.dragIdx===null)return; const arr=[...sorting.items]; const [m]=arr.splice(sorting.dragIdx,1); arr.splice(i,0,m); sorting.items=arr; sorting.dragIdx=null; }
     function checkSortingOrder(){ const uo=sorting.items.map(i=>i.tag); if(JSON.stringify(uo)===JSON.stringify(currentSortingData.value.correct_order)){ playSound('correct'); sorting.isCorrect=true; sorting.feedback='🎉 排序正确！'; } else { playSound('wrong'); sorting.isCorrect=false; sorting.feedback='🤔 顺序不对哦。'; } }
-    function nextSortingItem(){ sorting.index=(sorting.index+1)%classData.value.module_4_text.level_1_sorting.length; }
+    function nextSortingItem(){ sorting.index=(sorting.index+1)%(classData.value.module_4_text?.level_1_sorting.length || 1); }
 
     const compQuiz = reactive({ sIdx:0, qIdx:0, showAnswer:false, selectedOption:'' });
-    const currentCompSection = computed(()=>classData.value.module_10_comprehension[compQuiz.sIdx] || {sectionTitle:'', textContext:'', questions:[]});
+    const currentCompSection = computed(()=>(classData.value.module_10_comprehension || [])[compQuiz.sIdx] || {sectionTitle:'', textContext:'', questions:[]});
     const currentCompQuestion = computed(()=>(currentCompSection.value.questions||[])[compQuiz.qIdx] || {question:'', options:[], answer:''});
     function checkCompQuiz(opt){ compQuiz.selectedOption=opt; compQuiz.showAnswer=true; if(opt === currentCompQuestion.value.answer) playSound('correct'); else playSound('wrong'); }
-    function nextCompQuiz(){ if(compQuiz.qIdx<(currentCompSection.value.questions||[]).length-1){compQuiz.qIdx++;} else {compQuiz.sIdx=(compQuiz.sIdx+1)%classData.value.module_10_comprehension.length; compQuiz.qIdx=0;} compQuiz.showAnswer=false; compQuiz.selectedOption=''; }
+    function nextCompQuiz(){ if(compQuiz.qIdx<(currentCompSection.value.questions||[]).length-1){compQuiz.qIdx++;} else {compQuiz.sIdx=(compQuiz.sIdx+1)%(classData.value.module_10_comprehension?.length || 1); compQuiz.qIdx=0;} compQuiz.showAnswer=false; compQuiz.selectedOption=''; }
 
     // 12. 辅助拓展功能
     const repetitionState = reactive({ visible:{} });
@@ -610,26 +623,32 @@ createApp({
     function toggleSentenceVisibility(i){ repetitionState.visible[i]=!repetitionState.visible[i]; }
 
     const errorSpot = reactive({ index:0, showAnswer:false });
-    const currentErrorSpotData = computed(()=>classData.value.module_7_find_error.questions[errorSpot.index] || {sentence:'', error:'', correct:'', explanation:''});
-    function nextErrorSpot(){ errorSpot.index=(errorSpot.index+1)%classData.value.module_7_find_error.questions.length; errorSpot.showAnswer=false; }
+    const currentErrorSpotData = computed(()=>(classData.value.module_7_find_error?.questions || [])[errorSpot.index] || {sentence:'', error:'', correct:'', explanation:''});
+    function nextErrorSpot(){ errorSpot.index=(errorSpot.index+1)%(classData.value.module_7_find_error?.questions.length || 1); errorSpot.showAnswer=false; }
 
     const challenge = reactive({ index:0, areKeywordsShown:false, isStarted:false, timer:90, timerId:null, showReference:false });
-    const currentChallengeData = computed(()=>classData.value.module_6_challenge.challenge_sets[challenge.index] || {keywords:[], framework:'', translation:''});
+    const currentChallengeData = computed(()=>(classData.value.module_6_challenge?.challenge_sets || [])[challenge.index] || {keywords:[], framework:'', translation:''});
     function startChallengeTimer(){ challenge.isStarted=true; challenge.timer=90; challenge.timerId=setInterval(()=>{ if(challenge.timer>0)challenge.timer--; else stopChallengeTimer(); },1000); }
     function stopChallengeTimer(){ clearInterval(challenge.timerId); challenge.isStarted=false; }
-    function nextChallenge(){ stopChallengeTimer(); challenge.index=(challenge.index+1)%classData.value.module_6_challenge.challenge_sets.length; challenge.areKeywordsShown=false; challenge.showReference=false; challenge.timer=90; }
+    function nextChallenge(){ stopChallengeTimer(); challenge.index=(challenge.index+1)%(classData.value.module_6_challenge?.challenge_sets.length || 1); challenge.areKeywordsShown=false; challenge.showReference=false; challenge.timer=90; }
 
     const wordCloudList = ref([]);
 
     // 13. 诸神之战逻辑
     const jeopardy = reactive({
       phase:'setup', scores:{wei:0,shu:0,wu:0}, answered:new Set(), bumpTeam: null,
-      teamNames: classData.value.module_8_jeopardy.teamNames,
+      teamNames: { wei: "魏国", shu: "蜀国", wu: "吴国" },
       teams:{wei:[],shu:[],wu:[]},
       currentQuestion:null, showQuestionModal:false, showAnswer:false,
       showExtraPk:false, showExtraAns:false, extraIdx:0,
       isBuzzerOpen: false, buzzerWinner: null
     });
+
+    function initJeopardyTeamNames() {
+      if (classData.value.module_8_jeopardy?.teamNames) {
+        jeopardy.teamNames = classData.value.module_8_jeopardy.teamNames;
+      }
+    }
 
     function autoGroupActiveStudents(){
       const list = [...activeStudents.value];
@@ -650,7 +669,7 @@ createApp({
 
     function selectJeopardyQuestion(catIndex,points){
       const qId=`q_${catIndex}_${points}`;
-      const qd=classData.value.module_8_jeopardy.questions[qId];
+      const qd=classData.value.module_8_jeopardy?.questions[qId];
       if(qd){
         jeopardy.currentQuestion={...qd,id:qId,points};
         jeopardy.showQuestionModal=true;
@@ -702,9 +721,20 @@ createApp({
       publishMessage({ type: 'STOP_BUZZER' });
     }
     
-    const currentExtraPk = computed(()=>classData.value.module_8_jeopardy.extra_pk_questions[jeopardy.extraIdx] || {type:'', q:'', q_en:'', a:''});
-    function openExtraPk(){ jeopardy.showExtraPk=true; jeopardy.showExtraAns=false; jeopardy.extraIdx=Math.floor(Math.random()*classData.value.module_8_jeopardy.extra_pk_questions.length); }
-    function nextExtraPk(){ jeopardy.extraIdx=(jeopardy.extraIdx+1)%classData.value.module_8_jeopardy.extra_pk_questions.length; jeopardy.showExtraAns=false; }
+    const currentExtraPk = computed(()=>(classData.value.module_8_jeopardy?.extra_pk_questions || [])[jeopardy.extraIdx] || {type:'', q:'', q_en:'', a:''});
+    function openExtraPk(){ 
+      const list = classData.value.module_8_jeopardy?.extra_pk_questions || [];
+      if(!list.length) return;
+      jeopardy.showExtraPk=true; 
+      jeopardy.showExtraAns=false; 
+      jeopardy.extraIdx=Math.floor(Math.random()*list.length); 
+    }
+    function nextExtraPk(){ 
+      const list = classData.value.module_8_jeopardy?.extra_pk_questions || [];
+      if(!list.length) return;
+      jeopardy.extraIdx=(jeopardy.extraIdx+1)%list.length; 
+      jeopardy.showExtraAns=false; 
+    }
 
     // 14. 点名逻辑
     const pickedStudent = ref("准备抽取");
@@ -722,7 +752,7 @@ createApp({
 
     const liveAnswers = ref([]);
 
-    // 修正：智能拼接生成学生端 (student.html) 的访问链接
+    // 智能拼接生成学生端 (student.html) 的访问链接
     const qrCodeUrl = computed(() => {
       let href = window.location.href.split('#')[0].split('?')[0];
       let studentUrl = '';
@@ -738,7 +768,80 @@ createApp({
       return `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(studentUrl)}`;
     });
 
-    onMounted(()=>{
+    // ----------------------------------------------------
+    // 动态加载课程数据核心逻辑
+    // ----------------------------------------------------
+    const loadLessonData = async () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const lessonParam = urlParams.get('lesson') || 'hsk4-11';
+      ROOM_CHANNEL = `wanglaoshi/hsklesson/room_${lessonParam}`;
+
+      // 尝试 1: 读取 JSON 配置文件 (例如 ./data/hsk4-11.json 或 ./hsk4-11.json)
+      try {
+        const jsonPath = `./data/${lessonParam}.json`;
+        const res = await fetch(jsonPath);
+        if (res.ok) {
+          classData.value = await res.json();
+          initModulesAfterLoad();
+          return;
+        }
+      } catch (e) {
+        console.warn(`未能在 ./data/${lessonParam}.json 找到JSON配置，尝试加载 JS 脚本文件...`);
+      }
+
+      // 尝试 2: 动态加载 JS 脚本文件 (例如 lessonHSK4-11.js 或 ./hsk4-11.js)
+      try {
+        let scriptName = lessonParam.startsWith('lesson') ? `${lessonParam}.js` : `lesson${lessonParam.toUpperCase()}.js`;
+        if (lessonParam === 'hsk4-11') scriptName = 'lessonHSK4-11.js';
+
+        await new Promise((resolve, reject) => {
+          const script = document.createElement('script');
+          script.src = scriptName;
+          script.onload = resolve;
+          script.onerror = reject;
+          document.head.appendChild(script);
+        });
+
+        // 优先获取 LESSONS_DATA[id]，其次全局变量
+        if (window.LESSONS_DATA && window.LESSONS_DATA[lessonParam]) {
+          classData.value = window.LESSONS_DATA[lessonParam];
+        } else if (window.lessonData) {
+          classData.value = window.lessonData;
+        } else {
+          throw new Error('未找到全局课程数据对象');
+        }
+        initModulesAfterLoad();
+      } catch (err) {
+        console.error('加载课程数据失败:', err);
+        alert(`未找到课程 [${lessonParam}] 的配置文件！请检查文件路径。`);
+      }
+    };
+
+    function initModulesAfterLoad() {
+      isLoading.value = false;
+      setupPinyinMatchRound(0);
+      setupCollocationMatch();
+      setupCharMatchRound(0);
+      initRuMatch();
+      initBombWords();
+      initGuessWordsList();
+      initJeopardyTeamNames();
+      
+      const blindBoxes = classData.value.module_2_vocab_drill?.blind_box_spinner || [];
+      if(blindBoxes.length) {
+        currentBlindBox.value = (blindBoxes[0]?.words || []).map(w => ({ text: w.text, opened: false }));
+      }
+
+      const sortList = classData.value.module_4_text?.level_1_sorting || [];
+      if(sortList.length) {
+        sorting.items = [...sortList[0].shuffled_items].sort(() => .5 - Math.random());
+      }
+      setModule('vocab');
+    }
+
+    onMounted(async () => {
+      await loadLessonData();
+
       client = mqtt.connect('wss://05d1d5baec9d4cb3a21f5517b430cff1.s1.eu.hivemq.cloud:8884/mqtt', {
         username: 'classpro',
         password: 'Classpro2026',
@@ -781,12 +884,10 @@ createApp({
           }
         } catch(e) { console.error("MQTT Parse error:", e); }
       });
-
-      setupPinyinMatchRound(0); setupCollocationMatch(); setupCharMatchRound(0); initRuMatch(); setModule('vocab');
     });
 
     return {
-      classData, currentModule, currentActivity, currentActivities, setModule,
+      isLoading, classData, currentModule, currentActivity, currentActivities, setModule,
       isSidebarCollapsed, isSidebarHidden, activeStudents,
       pinyinMatch, selectHanzi, selectPinyin, nextPinyinMatchRound,
       collocationMatch, onCollocationItemClick, setupCollocationMatch, renderCollocationRound, nextCollocationRound,
