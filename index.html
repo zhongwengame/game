@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-CN">  
+<html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -159,7 +159,13 @@ h2.module-title { margin-top: 0; font-size: 22px; font-weight: 700; color: var(-
   </div>
 
   <div v-else class="sidebar" :class="{collapsed:isSidebarCollapsed, hidden:isSidebarHidden}">
-    <div class="teacher-logo"><h2>🀄 HSK学练平台</h2></div>
+    <div class="teacher-logo">
+      <h2>🀄 HSK学练平台</h2>
+      <div style="font-size:12px; margin-top:6px; color:#94a3b8; display:flex; align-items:center; justify-content:center; gap:6px;">
+        <div :style="{width:'8px',height:'8px',borderRadius:'50%',backgroundColor: mqttStatus==='已连接'?'#10b981':(mqttStatus==='连接中...'?'#f59e0b':'#ef4444')}"></div>
+        {{mqttStatus}}
+      </div>
+    </div>
     <div class="sidebar-nav">
       <button class="nav-btn" :class="{active:currentModule==='vocab'}" @click="setModule('vocab')"><span>🔖</span><div class="nav-btn-text"><span class="nav-btn-cn">核心词汇</span><span class="nav-btn-en">Vocabulary</span></div></button>
       <button class="nav-btn" :class="{active:currentModule==='vocabDrill'}" @click="setModule('vocabDrill')"><span>🎮</span><div class="nav-btn-text"><span class="nav-btn-cn">词汇操练</span><span class="nav-btn-en">Vocab Drill</span></div></button>
@@ -403,7 +409,12 @@ createApp({
     const isSidebarCollapsed = ref(false);
     const isSidebarHidden = ref(false);
     let client = null;
-    let ROOM_CHANNEL = 'wanglaoshi/hsklesson/room_default';
+    
+    // 增加连接状态显示
+    const mqttStatus = ref('连接中...');
+    
+    // 频道采用响应式
+    const ROOM_CHANNEL = ref('wanglaoshi/hsklesson/room_default');
 
     const playSound = (type) => {
       try {
@@ -452,7 +463,7 @@ createApp({
 
     const publishMessage = (msg) => {
       if (client && client.connected) {
-        client.publish(ROOM_CHANNEL, JSON.stringify(msg));
+        client.publish(ROOM_CHANNEL.value, JSON.stringify(msg));
       }
     };
 
@@ -752,19 +763,17 @@ createApp({
 
     const liveAnswers = ref([]);
 
-    // 智能拼接生成学生端 (student.html) 的访问链接
+    // 🔴 完美兼容 GitHub Pages 的二维码路径生成逻辑
     const qrCodeUrl = computed(() => {
-      let href = window.location.href.split('#')[0].split('?')[0];
-      let studentUrl = '';
-      if (href.endsWith('index.html')) {
-        studentUrl = href.replace('index.html', 'student.html');
-      } else if (href.endsWith('/')) {
-        studentUrl = href + 'student.html';
-      } else {
-        const lastSlash = href.lastIndexOf('/');
-        studentUrl = href.substring(0, lastSlash + 1) + 'student.html';
+      let currentUrl = window.location.href.split('#')[0].split('?')[0];
+      let baseDir = currentUrl;
+      // 兼容直接访问根目录但没有 / 的情况
+      if (currentUrl.endsWith('index.html')) {
+          baseDir = currentUrl.replace('index.html', '');
+      } else if (!currentUrl.endsWith('/')) {
+          baseDir = currentUrl + '/';
       }
-      studentUrl += '?topic=' + encodeURIComponent(ROOM_CHANNEL);
+      let studentUrl = baseDir + 'student.html?topic=' + encodeURIComponent(ROOM_CHANNEL.value);
       return `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(studentUrl)}`;
     });
 
@@ -773,10 +782,10 @@ createApp({
     // ----------------------------------------------------
     const loadLessonData = async () => {
       const urlParams = new URLSearchParams(window.location.search);
-      const lessonParam = urlParams.get('lesson') || 'hsk4-11';
-      ROOM_CHANNEL = `wanglaoshi/hsklesson/room_${lessonParam}`;
+      const lessonParam = (urlParams.get('lesson') || 'hsk4-11').trim();
+      ROOM_CHANNEL.value = `wanglaoshi/hsklesson/room_${lessonParam}`;
 
-      // 尝试 1: 读取 JSON 配置文件 (例如 ./data/hsk4-11.json 或 ./hsk4-11.json)
+      // 尝试 1: 读取 JSON 配置文件
       try {
         const jsonPath = `./data/${lessonParam}.json`;
         const res = await fetch(jsonPath);
@@ -789,7 +798,7 @@ createApp({
         console.warn(`未能在 ./data/${lessonParam}.json 找到JSON配置，尝试加载 JS 脚本文件...`);
       }
 
-      // 尝试 2: 动态加载 JS 脚本文件 (例如 lessonHSK4-11.js 或 ./hsk4-11.js)
+      // 尝试 2: 动态加载 JS 脚本文件
       try {
         let scriptName = lessonParam.startsWith('lesson') ? `${lessonParam}.js` : `lesson${lessonParam.toUpperCase()}.js`;
         if (lessonParam === 'hsk4-11') scriptName = 'lessonHSK4-11.js';
@@ -802,7 +811,6 @@ createApp({
           document.head.appendChild(script);
         });
 
-        // 优先获取 LESSONS_DATA[id]，其次全局变量
         if (window.LESSONS_DATA && window.LESSONS_DATA[lessonParam]) {
           classData.value = window.LESSONS_DATA[lessonParam];
         } else if (window.lessonData) {
@@ -847,10 +855,18 @@ createApp({
         password: 'Classpro2026',
         clientId: 'teacher_' + Math.random().toString(16).substr(2, 8)
       });
-      client.on('connect', ()=>{ client.subscribe(ROOM_CHANNEL); });
       
-      client.on('message', (topic, message)=>{
-        if(topic !== ROOM_CHANNEL) return;
+      client.on('connect', () => { 
+        mqttStatus.value = '已连接';
+        client.subscribe(ROOM_CHANNEL.value); 
+      });
+      
+      client.on('offline', () => { mqttStatus.value = '已断线'; });
+      client.on('error', () => { mqttStatus.value = '连接失败'; });
+      
+      client.on('message', (topic, message) => {
+        if(topic !== ROOM_CHANNEL.value) return;
+        
         try {
           const data = JSON.parse(message.toString());
 
@@ -863,22 +879,31 @@ createApp({
             }
           }
 
-          if ((data.type === 'JOIN' || data.type === 'ECHO_WALL' || data.type === 'BUZZ') && data.name) { 
+          if ((data.type === 'JOIN' || data.type === 'ECHO_WALL' || data.type === 'SUBMIT_ANSWER' || data.type === 'BUZZ') && data.name) { 
             activeStudentsSet.add(data.name.trim()); 
           }
           
-          if(data.type === 'ECHO_WALL'){
-            liveAnswers.value.unshift(data);
+          if(data.type === 'ECHO_WALL' || data.type === 'SUBMIT_ANSWER'){
+            if (!data.time) {
+                const now = new Date();
+                data.time = `${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`;
+            }
+            // 🔴 强制触发 Vue 渲染：用展开语法完全替换数组
+            liveAnswers.value = [data, ...liveAnswers.value];
+            
             if(currentActivity.value === 'wc_live' && data.text){
               const w = data.text.trim().substring(0, 10); 
               const ex = wordCloudList.value.find(x => x.text === w);
-              if(ex){ ex.count++; ex.size = Math.min(100, 24 + ex.count * 6); }
-              else { 
-                wordCloudList.value.push({
+              if(ex){ 
+                ex.count++; 
+                ex.size = Math.min(100, 24 + ex.count * 6); 
+              } else { 
+                // 同理，强制触发词云重新渲染
+                wordCloudList.value = [...wordCloudList.value, {
                   text: w, count: 1, size: 24, 
                   color: ['#38bdf8', '#f59e0b', '#34d399', '#f43f5e', '#a78bfa'][Math.floor(Math.random()*5)],
                   x: Math.random() * 60 + 20, y: Math.random() * 60 + 20, opacity: 1
-                }); 
+                }];
               }
             }
           }
@@ -888,7 +913,7 @@ createApp({
 
     return {
       isLoading, classData, currentModule, currentActivity, currentActivities, setModule,
-      isSidebarCollapsed, isSidebarHidden, activeStudents,
+      isSidebarCollapsed, isSidebarHidden, activeStudents, mqttStatus,
       pinyinMatch, selectHanzi, selectPinyin, nextPinyinMatchRound,
       collocationMatch, onCollocationItemClick, setupCollocationMatch, renderCollocationRound, nextCollocationRound,
       charMatch, onCharClick, clearCharSelection, nextCharMatchRound,
