@@ -347,8 +347,13 @@ h2.module-title { margin-top: 0; font-size: 22px; font-weight: 700; color: var(-
   <!-- 答题弹窗 -->
   <div v-if="jeopardy.showQuestionModal" class="jeopardy-modal-overlay">
     <div class="jeopardy-modal-content">
+      <!-- 兼容展示看图猜词的图片 -->
+      <div v-if="jeopardy.currentQuestion.image" style="margin-bottom: 16px;">
+        <img :src="jeopardy.currentQuestion.image" style="max-height: 220px; max-width: 100%; border-radius: var(--radius-md); object-fit: contain; box-shadow: var(--shadow-sm);" />
+      </div>
+
       <div class="jeopardy-modal-question">{{jeopardy.currentQuestion.question}}</div>
-      <div class="jeopardy-modal-question-en">{{jeopardy.currentQuestion.question_en}}</div>
+      <div v-if="jeopardy.currentQuestion.question_en" class="jeopardy-modal-question-en">{{jeopardy.currentQuestion.question_en}}</div>
 
       <div v-if="jeopardy.buzzerWinner !== null" class="buzzer-judge-panel">
         <h2 class="buzzer-judge-title">⚡ 学生抢答成功 ⚡</h2>
@@ -678,16 +683,92 @@ createApp({
       publishMessage({ type: 'TEAM_ASSIGN_ALL', list: teamAssignedList });
     }
 
-    function selectJeopardyQuestion(catIndex,points){
-      const qId=`q_${catIndex}_${points}`;
-      const qd=classData.value.module_8_jeopardy?.questions[qId];
-      if(qd){
-        jeopardy.currentQuestion={...qd,id:qId,points};
-        jeopardy.showQuestionModal=true;
-        jeopardy.showAnswer=false;
-        jeopardy.isBuzzerOpen=false;
-        jeopardy.buzzerWinner=null;
+    // 🔴 根据分值动态调取题源
+    function selectJeopardyQuestion(catIndex, points) {
+      const qId = `q_${catIndex}_${points}`;
+      let qd = null;
+
+      if (points === 10) {
+        if (catIndex === 0) {
+          // 题型 1: 看图猜词 (vd1_bomb / word_bomb)
+          const list = classData.value.module_2_vocab_drill?.word_bomb || [];
+          if (list.length) {
+            const item = list[Math.floor(Math.random() * list.length)];
+            qd = {
+              question: "【看图猜词】请根据图片说出对应词语：",
+              question_en: item.en_hint || "Guess the word based on the picture",
+              image: item.img_url || "",
+              answer: item.word
+            };
+          }
+        } else if (catIndex === 1) {
+          // 题型 2: 抢答 (vd2_guess_reveal / guess_words)
+          const list = classData.value.module_2_vocab_drill?.guess_words || [];
+          if (list.length) {
+            const item = list[Math.floor(Math.random() * list.length)];
+            qd = {
+              question: `【抢答题】${item.clues ? item.clues.join('，') : '请抢答目标词语'}`,
+              question_en: "Quick Answer: Guess the target word",
+              answer: item.target_word
+            };
+          }
+        } else if (catIndex === 2) {
+          // 题型 3: 词语搭配 (collocations)
+          const list = classData.value.collocations || [];
+          if (list.length) {
+            const item = list[Math.floor(Math.random() * list.length)];
+            qd = {
+              question: `【词语搭配】请给出与“${item.left}”搭配的词语：`,
+              question_en: "Collocation: Complete the word pair",
+              answer: `${item.left} + ${item.right}`
+            };
+          }
+        }
+      } else if (points === 20) {
+        // 20分题: 连词成句 (gr1_order / level_1_drag_drop)
+        const gps = classData.value.module_3_grammar?.grammar_points || [];
+        const allDragDrop = [];
+        gps.forEach(gp => {
+          if (gp.levels?.level_1_drag_drop) {
+            allDragDrop.push(...gp.levels.level_1_drag_drop);
+          }
+        });
+        if (allDragDrop.length) {
+          const item = allDragDrop[catIndex % allDragDrop.length];
+          const shuffled = [...(item.chunks || [])].sort(() => Math.random() - 0.5);
+          qd = {
+            question: `【连词成句】[ ${shuffled.join(" / ")} ]`,
+            question_en: item.en_hint || "Rearrange the words to form a correct sentence",
+            answer: item.correct_answer
+          };
+        }
+      } else if (points === 30) {
+        // 30分题: 极限挑战 (c1_extreme_challenge / challenge_sets)
+        const list = classData.value.module_6_challenge?.challenge_sets || [];
+        if (list.length) {
+          const item = list[catIndex % list.length];
+          qd = {
+            question: `【极限挑战】请用以下词语组织一段表达：\n${(item.keywords || []).join("、")}`,
+            question_en: item.translation ? `参考翻译: ${item.translation}` : "Make a sentence or paragraph using all keywords",
+            answer: item.framework || "请参考例文或自由发挥并符合语法逻辑"
+          };
+        }
       }
+
+      // 如果数据中未找到，平稳回退到原始题库
+      if (!qd) {
+        qd = classData.value.module_8_jeopardy?.questions[qId] || {
+          question: `【${points}分题】请作答`,
+          question_en: "Please answer the question",
+          answer: "参考作答"
+        };
+      }
+
+      jeopardy.currentQuestion = { ...qd, id: qId, points };
+      jeopardy.showQuestionModal = true;
+      jeopardy.showAnswer = false;
+      jeopardy.isBuzzerOpen = false;
+      jeopardy.buzzerWinner = null;
     }
 
     function openBuzzerForStudents(){
@@ -763,11 +844,10 @@ createApp({
 
     const liveAnswers = ref([]);
 
-    // 🔴 完美兼容 GitHub Pages 的二维码路径生成逻辑
+    // 二维码生成路径
     const qrCodeUrl = computed(() => {
       let currentUrl = window.location.href.split('#')[0].split('?')[0];
       let baseDir = currentUrl;
-      // 兼容直接访问根目录但没有 / 的情况
       if (currentUrl.endsWith('index.html')) {
           baseDir = currentUrl.replace('index.html', '');
       } else if (!currentUrl.endsWith('/')) {
@@ -888,7 +968,6 @@ createApp({
                 const now = new Date();
                 data.time = `${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`;
             }
-            // 🔴 强制触发 Vue 渲染：用展开语法完全替换数组
             liveAnswers.value = [data, ...liveAnswers.value];
             
             if(currentActivity.value === 'wc_live' && data.text){
@@ -898,7 +977,6 @@ createApp({
                 ex.count++; 
                 ex.size = Math.min(100, 24 + ex.count * 6); 
               } else { 
-                // 同理，强制触发词云重新渲染
                 wordCloudList.value = [...wordCloudList.value, {
                   text: w, count: 1, size: 24, 
                   color: ['#38bdf8', '#f59e0b', '#34d399', '#f43f5e', '#a78bfa'][Math.floor(Math.random()*5)],
