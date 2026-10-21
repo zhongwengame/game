@@ -474,7 +474,7 @@ const lessonData = {
     "module_9_vocab_practice": [
         { "question": "这个____，我有很多新的学习计划。", "options": ["出生", "学期", "性别", "道歉"], "answer": "学期" },
         { "question": "他____在1990年。", "options": ["性别", "出生", "道歉", "打印"], "answer": "出生" },
-        { "question": "表格上要求填写姓名和____。", "options": ["国籍", "学期", "性别", "刀"], "answer": "性别","国籍" },
+        { "question": "表格上要求填写姓名和____。", "options": ["国籍", "学期", "姓别", "刀"], "answer": "国籍" },
         { "question": "做错事情应该及时____。", "options": ["打招呼", "打印", "道歉", "复印"], "answer": "道歉" },
         { "question": "请把这份文件____出来。", "options": ["复印", "出生", "打印", "道歉"], "answer": "打印" },
         { "question": "我需要把护照____一份。", "options": ["戴", "印", "脱", "转"], "answer": "印" },
