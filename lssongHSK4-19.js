@@ -1,3 +1,4 @@
+file_name: lessonHSK4-19.js
 /*
 ================================================================
 == 课程数据文件 (Lesson Data File)
@@ -15,7 +16,7 @@ const shuffleArray = (array) => {
 
 const lessonData = {
     "lesson": "HSK 4 - 第十九课《生活的味道》",
-    "students": ["张伟", "李娜", "王明", "赵丽", "刘强", "陈芳", "周华", "黄丽丽", "孙浩", "朱琳"], // Example student names
+    "students": ["列夏", "丽莎", "明溪", "星悦", "德昊", "任华", "梦航", "基里尔", "萨~沙~", "萨沙", "达铭", "安德烈", "纪嘉", "高斯佳", "瓦列", "Maiia"],
 
     "pinyin_map": {
         "学期": "xuéqī", "出生": "chūshēng", "性别": "xìngbié", "道歉": "dàoqiàn", "打印": "dǎyìn",
@@ -25,15 +26,10 @@ const lessonData = {
         "占线": "zhànxiàn", "租": "zū", "吵": "chǎo", "厨房": "chúfáng", "房东": "fángdōng",
         "座位": "zuòwèi", "功夫": "gōngfu", "乒乓球": "pīngpāngqiú", "羽毛球": "yǔmáoqiú", "场": "chǎng",
         "禁止": "jìnzhǐ", "申请": "shēnqǐng", "表格": "biǎogé", "粗心": "cūxīn", "继续": "jìxù",
-        "按照": "ànzhào", "重新": "chóngxīn", "地点": "dìdiǎn", "邮箱": "yóuxiāng", "信封": "xìnfēng",
-        "网站": "wǎngzhàn", "信息": "xìnxī", "更新": "gēngxīn", "社会": "shèhuì", "增长": "zēngzhǎng",
-        "科学": "kēxué", "普遍": "pǔbiàn", "节约": "jiéyuē", "解决": "jiějué", "仍然": "réngrán",
-        "解释": "jiěshì", "奇怪": "qíguài", "现代": "xiàndài", "巨大": "jùdà", "乘坐": "chéngzuò",
-        "地球": "dìqiú", "发展": "fāzhǎn", "价格": "jiàgé", "降低": "jiàngdī", "流血": "liúxuè",
-        "严重": "yánzhòng", "餐厅": "cāntīng", "口袋": "kǒudài", "基础": "jīchǔ", "故意": "gùyì",
-        "动作": "dòngzuò", "标准": "biāozhǔn", "仔细": "zǐxì", "满意": "mǎnyì", "周围": "zhōuwéi",
-        "环境": "huánjìng", "广告": "guǎnggào", "路过": "lùguò", "体育": "tǐyù", "选择": "xuǎnzé",
-        "条件": "tiáojiàn"
+        "按照": "ànzhào", "重新": "chóngxīn", "流血": "liúxuè", "严重": "yánzhòng", "餐厅": "cāntīng",
+        "口袋": "kǒudài", "基础": "jīchǔ", "故意": "gùyì", "动作": "dòngzuò", "标准": "biāozhǔn",
+        "仔细": "zǐxì", "满意": "mǎnyì", "周围": "zhōuwéi", "环境": "huánjìng", "广告": "guǎnggào",
+        "路过": "lùguò", "体育": "tǐyù", "选择": "xuǎnzé", "条件": "tiáojiàn"
     },
 
     "translation_dict": {
@@ -44,15 +40,10 @@ const lessonData = {
         "占线": "to be busy (phone line)", "租": "to rent", "吵": "noisy", "厨房": "kitchen", "房东": "landlord",
         "座位": "seat", "功夫": "kung fu", "乒乓球": "ping-pong; table tennis", "羽毛球": "badminton", "场": "(measure word for games, performances)",
         "禁止": "to forbid; to prohibit", "申请": "to apply; application", "表格": "form; table", "粗心": "careless", "继续": "to continue",
-        "按照": "according to; in accordance with", "重新": "again; anew", "地点": "place; site", "邮箱": "mailbox; email address", "信封": "envelope",
-        "网站": "website", "信息": "information", "更新": "to update", "社会": "society", "增长": "to increase",
-        "科学": "science", "普遍": "universal; general", "节约": "to save", "解决": "to solve", "仍然": "still; yet",
-        "解释": "to explain", "奇怪": "strange", "现代": "modern", "巨大": "huge", "乘坐": "to ride (in a vehicle)",
-        "地球": "Earth", "发展": "to develop", "价格": "price", "降低": "to lower", "流血": "to bleed",
-        "严重": "serious; severe", "餐厅": "restaurant", "口袋": "pocket", "基础": "foundation; basis", "故意": "deliberately; on purpose",
-        "动作": "action; movement", "标准": "standard; criterion", "仔细": "careful; attentive", "满意": "satisfied", "周围": "surroundings",
-        "环境": "environment", "广告": "advertisement", "路过": "to pass by", "体育": "physical education; sports", "选择": "to choose; choice",
-        "条件": "condition; requirement"
+        "按照": "according to; in accordance with", "重新": "again; anew", "流血": "to bleed", "严重": "serious; severe", "餐厅": "restaurant",
+        "口袋": "pocket", "基础": "foundation; basis", "故意": "deliberately; on purpose", "动作": "action; movement", "标准": "standard; criterion",
+        "仔细": "careful; attentive", "满意": "satisfied", "周围": "surroundings", "环境": "environment", "广告": "advertisement",
+        "路过": "to pass by", "体育": "physical education; sports", "选择": "to choose; choice", "条件": "condition; requirement"
     },
 
     "collocations": [
@@ -60,19 +51,19 @@ const lessonData = {
         { "left": "向朋友", "right": "道歉" }, { "left": "打印", "right": "文件" }, { "left": "复印", "right": "材料" },
         { "left": "吃", "right": "饺子" }, { "left": "用刀", "right": "切" }, { "left": "把手弄", "right": "破" },
         { "left": "脱", "right": "衣服" }, { "left": "去", "right": "理发" }, { "left": "零钱", "right": "不够" },
-        { "left": "向他", "right": "打招呼" }, { "left": "戴", "right": "眼镜" }, { "left": "跳", "right": "舞" },
+        { "left": "向他", "right": "打招呼" }, { "left": "戴", "right": "眼镜" }, { "left": "跳", "right": "舞蹈" },
         { "left": "中国", "right": "国籍" }, { "left": "抬", "right": "胳膊" }, { "left": "向左", "right": "转" },
         { "left": "电话", "right": "占线" }, { "left": "租", "right": "房子" }, { "left": "环境很", "right": "吵" },
         { "left": "干净的", "right": "厨房" }, { "left": "联系", "right": "房东" }, { "left": "空", "right": "座位" },
         { "left": "练", "right": "中国功夫" }, { "left": "打", "right": "乒乓球" }, { "left": "打", "right": "羽毛球" },
         { "left": "一场", "right": "比赛" }, { "left": "禁止", "right": "吸烟" }, { "left": "填写", "right": "申请表" },
         { "left": "申请", "right": "表格" }, { "left": "做事情很", "right": "粗心" }, { "left": "继续", "right": "学习" },
-        { "left": "按照", "right": "规定" }, { "left": "重新", "right": "开始" }, { "left": "严重", "right": "受伤" },
-        { "left": "去", "right": "餐厅" }, { "left": "在", "right": "口袋" }, { "left": "舞蹈", "right": "基础" },
-        { "left": "不是", "right": "故意" }, { "left": "舞蹈", "right": "动作" }, { "left": "符合", "right": "标准" },
-        { "left": "检查得很", "right": "仔细" }, { "left": "感到很", "right": "满意" }, { "left": "周围的", "right": "环境" },
-        { "left": "做", "right": "广告" }, { "left": "路过", "right": "学校" }, { "left": "去", "right": "体育馆" },
-        { "left": "做出", "right": "选择" }, { "left": "学习", "right": "条件" }, { "left": "手", "right": "流血" }
+        { "left": "按照", "right": "规定" }, { "left": "重新", "right": "开始" }, { "left": "手", "right": "流血" },
+        { "left": "伤得", "right": "严重" }, { "left": "去", "right": "餐厅" }, { "left": "衣服", "right": "口袋" },
+        { "left": "舞蹈", "right": "基础" }, { "left": "不是", "right": "故意" }, { "left": "舞蹈", "right": "动作" },
+        { "left": "符合", "right": "标准" }, { "left": "检查得很", "right": "仔细" }, { "left": "感到很", "right": "满意" },
+        { "left": "周围的", "right": "环境" }, { "left": "做", "right": "广告" }, { "left": "路过", "right": "学校" },
+        { "left": "去", "right": "体育馆" }, { "left": "做出", "right": "选择" }, { "left": "学习", "right": "条件" }
     ],
 
     // 1. 词汇基础模块
@@ -175,7 +166,7 @@ const lessonData = {
                         { "chunks": ["他没通过考试，", "所以", "没考上", "大学。"], "correct_answer": "他没通过考试，所以没考上大学。", "en_hint": "He didn't pass the exam, so he didn't get into university." },
                         { "chunks": ["他申请", "上了", "国外", "大学的", "博士。"], "correct_answer": "他申请上了国外大学的博士。", "en_hint": "He successfully applied for a Ph.D. at a foreign university." },
                         { "chunks": ["现在", "堵车", "这么", "厉害，", "今天", "坐不上", "8点", "那趟", "去上海", "的飞机", "了。"], "correct_answer": "现在堵车这么厉害，今天坐不上8点那趟去上海的飞机了。", "en_hint": "The traffic jam is so bad now, it seems I won't be able to catch the 8 o'clock flight to Shanghai today." },
-                        { "chunks": ["要是", "你想去", "云南旅游，", "应该", "早点儿买", "火车票，", "否则", "就坐不上", "火车了。"], "correct_answer": "要是你想去云南旅游，应该早点儿买火车票，否则就坐不上火车了。", "en_hint": "If you want to travel to Yunnan, you should buy train tickets early, otherwise you won't be able to get on the train." }
+                        { "chunks": ["要是", "你想去", "云南旅游，", "应该", "早点儿买", "火车票，", "否则", "就买不上", "了。"], "correct_answer": "要是你想去云南旅游，应该早点儿买火车票，否则就买不上了。", "en_hint": "If you want to travel to Yunnan, you should buy train tickets early, otherwise you won't be able to get them." }
                     ],
                     "level_2_picture_make_sentence": [
                         {
@@ -183,7 +174,7 @@ const lessonData = {
                             "hint": "用“V+上”说明很难买到火车票。",
                             "en_hint": "Use 'V+上' to explain it's hard to get a train ticket.",
                             "keywords": ["火车票", "买上"],
-                            "reference_answer": "火车票很难买，不提前买的话恐怕买不上。"
+                            "reference_answer": "春运的时候，火车票很难买，不提前买的话恐怕买不上。"
                         }
                     ],
                     "level_3_scenario": [
@@ -305,34 +296,34 @@ const lessonData = {
         ],
         "synonym_distinction": [
             {
-                "sentence": "这本书你看完了我____看吧。",
+                "sentence": "他跟我打了个招呼，____就走开了。",
                 "options": ["接着", "然后"],
                 "answer": "接着",
-                "explanation": "<strong>接着 (jiēzhe):</strong> 副词，强调时间上紧跟着，表示动作紧密相连，不能有明显的时间间隔。主语可以相同或不同。这里强调你一读完，我就立刻读。<br><strong>然后 (ránhòu):</strong> 连词，表示事情的顺序，前后动作可以有间隔，常用在“先……然后……”结构中。主语一般相同。"
+                "explanation": "<strong>接着 (jiēzhe):</strong> 副词，强调时间上紧跟着，表示动作紧密相连，不能有明显的时间间隔。这里强调“打招呼”后立刻“走开”。<br><strong>然后 (ránhòu):</strong> 连词，表示事情的顺序，前后动作可以有间隔，常用在“先……然后……”结构中。主语一般相同。"
             },
             {
-                "sentence": "吃完饭，咱们____去看电影。",
+                "sentence": "我们先去理发，____去餐厅吃饭。",
                 "options": ["接着", "然后"],
                 "answer": "然后",
-                "explanation": "<strong>然后 (ránhòu):</strong> 用于表示动作的先后顺序，这里“吃饭”和“看电影”是按顺序进行的两个活动，中间可能有短暂的间隔。"
+                "explanation": "<strong>然后 (ránhòu):</strong> 用于表示动作的先后顺序，且常与“先”搭配。这里“理发”和“吃饭”是两个有顺序的活动。"
             },
             {
-                "sentence": "他已经学了一年汉语了，明年还要____学。",
+                "sentence": "这个学期学完了，下个学期还要____学。",
                 "options": ["接着", "然后"],
                 "answer": "接着",
-                "explanation": "<strong>接着 (jiēzhe):</strong> 表示在原来基础上继续进行，强调持续性，没有中断。"
+                "explanation": "<strong>接着 (jiēzhe):</strong> 表示在原来基础上继续进行，强调持续性。"
             },
             {
-                "sentence": "先洗手，____吃饭。",
+                "sentence": "他先打印了文件，____又去复印了护照。",
                 "options": ["接着", "然后"],
                 "answer": "然后",
-                "explanation": "<strong>然后 (ránhòu):</strong> 表示动作的先后顺序，先洗手再吃饭。"
+                "explanation": "<strong>然后 (ránhòu):</strong> “打印”和“复印”是两个按顺序进行的独立动作，用“然后”更自然，表示先后次序。"
             },
             {
-                "sentence": "他说完话，____又唱了一首歌。",
+                "sentence": "王静切菜时把手弄破了，____李进就帮她包扎。",
                 "options": ["接着", "然后"],
                 "answer": "接着",
-                "explanation": "<strong>接着 (jiēzhe):</strong> 强调紧密顺承，说完话后紧接着唱歌，动作之间无明显间隔。"
+                "explanation": "<strong>接着 (jiēzhe):</strong> 强调在前面一个动作结束后，立即进行下一个动作，表示事件的紧密承接。"
             }
         ]
     },
@@ -416,7 +407,7 @@ const lessonData = {
         ]
     },
 
-    // 6. 动态词云 (不变)
+    // 6. 动态词云
     "module_5_wordcloud": {
         "title": "💬 生活的味道是什么？",
         "hint": "请扫码发送1-2个词描述（如：甜、苦、酸、辣、惊喜、挑战...）"
@@ -454,7 +445,7 @@ const lessonData = {
         "teamNames": { "wei": "魏国", "shu": "#10b981", "wu": "#3b82f6" },
         "teamColors": { "wei": "#ef4444", "shu": "#10b981", "wu": "#3b82f6" },
         "questions": {
-            "q_0_10": { "question": "请填空：请问您的____是什么？", "question_en": "Fill in the blank: What is your ____?", "answer": "性别/国籍" },
+            "q_0_10": { "question": "请填空：请问您的____是什么？", "question_en": "Fill in the blank: What is your ____?", "answer": "性别 / 国籍" },
             "q_0_20": { "question": "请填空：我没有____，不能买饮料了。", "question_en": "Fill in the blank: I don't have ____, so I can't buy drinks.", "answer": "零钱" },
             "q_0_30": { "question": "请填空：我打电话给他，总是____。", "question_en": "Fill in the blank: I call him, but it's always ____.", "answer": "占线" },
             "q_1_10": { "question": "课文一中，马克为什么需要重新申请？", "question_en": "In Text 1, why did Mark need to reapply?", "answer": "因为他希望下学期继续在这里学习。" },
@@ -474,10 +465,10 @@ const lessonData = {
     "module_9_vocab_practice": [
         { "question": "这个____，我有很多新的学习计划。", "options": ["出生", "学期", "性别", "道歉"], "answer": "学期" },
         { "question": "他____在1990年。", "options": ["性别", "出生", "道歉", "打印"], "answer": "出生" },
-        { "question": "表格上要求填写姓名和____。", "options": ["国籍", "学期", "姓别", "刀"], "answer": "国籍" },
+        { "question": "表格上要求填写姓名和____。", "options": ["国籍", "学期", "性别", "刀"], "answer": "性别" },
         { "question": "做错事情应该及时____。", "options": ["打招呼", "打印", "道歉", "复印"], "answer": "道歉" },
         { "question": "请把这份文件____出来。", "options": ["复印", "出生", "打印", "道歉"], "answer": "打印" },
-        { "question": "我需要把护照____一份。", "options": ["戴", "印", "脱", "转"], "answer": "印" },
+        { "question": "我需要把护照____一份。", "options": ["戴", "复印", "脱", "转"], "answer": "复印" },
         { "question": "过年时，大家喜欢吃____。", "options": ["包子", "零钱", "饺子", "米饭"], "answer": "饺子" },
         { "question": "用____切菜要小心。", "options": ["眼镜", "刀", "胳膊", "零钱"], "answer": "刀" },
         { "question": "我的衣服____了一个洞。", "options": ["脱", "破", "理发", "零钱"], "answer": "破" },
@@ -495,7 +486,7 @@ const lessonData = {
         { "question": "我打电话给她，但电话____了。", "options": ["租", "吵", "占线", "厨房"], "answer": "占线" },
         { "question": "我想____一套小公寓。", "options": ["吵", "厨房", "房东", "租"], "answer": "租" },
         { "question": "外面太____了，我睡不着。", "options": ["厨房", "租", "吵", "房东"], "answer": "吵" },
-        { "question": "这个____很干净。", "options": ["房东", "座", "厨房", "功夫"], "answer": "厨房" },
+        { "question": "这个____很干净。", "options": ["房东", "座位", "厨房", "功夫"], "answer": "厨房" },
         { "question": "我需要联系____谈房租的事情。", "options": ["房东", "座位", "功夫", "乒乓球"], "answer": "房东" },
         { "question": "这里还有一个空____。", "options": ["功夫", "羽毛球", "座位", "场"], "answer": "座位" },
         { "question": "他会中国____。", "options": ["乒乓球", "羽毛球", "座位", "功夫"], "answer": "功夫" },
