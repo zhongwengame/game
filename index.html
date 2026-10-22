@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-CN"> 
+<html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -58,7 +58,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helv
 .grammar-tab.active { background: #16a34a; color: #fff; border-color: #16a34a; }
 
 .main-content { padding: 24px; display: flex; justify-content: center; }
-.panel-container { flex: 1; display: flex; flex-direction: column; max-width: 1100px; margin: 0 auto; width: 100%; }
+.panel-container { flex: 1; display: flex; flex-direction: column; max-width: 1240px; margin: 0 auto; width: 100%; }
 .panel { background: var(--bg-panel); padding: 32px; border-radius: var(--radius-lg); box-shadow: var(--shadow-md); border: 1px solid var(--border-color); width: 100%; box-sizing: border-box; text-align: center; }
 .next-btn { padding: 10px 24px; font-size: 15px; font-weight: 600; border: none; border-radius: var(--radius-md); cursor: pointer; background: var(--primary); color: #fff; margin-top: 16px; transition: all 0.2s; box-shadow: var(--shadow-sm); }
 .next-btn:hover:not(:disabled) { background: var(--primary-hover); transform: translateY(-1px); }
@@ -99,8 +99,74 @@ h2.module-title { margin-top: 0; font-size: 22px; font-weight: 700; color: var(-
 
 .chunk-bank { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; min-height: 80px; margin-top: 20px; }
 .chunk-btn { padding: 10px 18px; font-size: 18px; font-weight: 600; background: #fff; border: 1px solid var(--border-color); border-radius: var(--radius-md); cursor: pointer; box-shadow: var(--shadow-sm); transition: all 0.2s; }
-.chunk-btn:hover { border-color: var(--primary); }
+.chunk-btn:hover:not(:disabled) { border-color: var(--primary); }
 .chunk-btn.in-answer { background: #eff6ff; border-color: #93c5fd; color: #1e40af; }
+
+/* ============ 汉字配对 / 单字方块 ============ */
+.char-tile-wrap { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; max-width: 640px; margin: 0 auto; }
+.char-tile {
+  min-width: 60px;
+  padding: 14px 8px;
+  font-size: 26px;
+  font-weight: 700;
+  background: #fff;
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all .18s;
+  box-shadow: var(--shadow-sm);
+  user-select: none;
+  text-align: center;
+  line-height: 1;
+}
+.char-tile:hover:not(.char-tile-used) {
+  border-color: var(--primary);
+  color: var(--primary);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 16px rgba(59,130,246,.18);
+}
+.char-tile.picked {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+  transform: translateY(-3px);
+  box-shadow: 0 8px 16px rgba(59,130,246,.35);
+}
+.char-tile.wrong {
+  animation: shake .4s;
+  background: #fee2e2;
+  border-color: var(--danger);
+  color: #991b1b;
+}
+.char-tile-used {
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(.7);
+}
+
+.char-answer-box {
+  background: var(--bg-main);
+  margin: 22px auto;
+  border-radius: var(--radius-md);
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: 440px;
+  border: 1px dashed var(--border-color);
+}
+.char-answer-text { font-size: 22px; font-weight: 700; flex-grow: 1; letter-spacing: 2px; min-height: 30px; text-align: left; }
+.char-answer-text.placeholder { color: #94a3b8; font-weight: 500; font-size: 18px; letter-spacing: 0; }
+.char-progress {
+  display: inline-block;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--primary);
+  background: #eff6ff;
+  padding: 5px 14px;
+  border-radius: 14px;
+  margin-bottom: 18px;
+}
 
 .jeopardy-container { display: flex; flex-direction: column; gap: 16px; }
 .jeopardy-scoreboard { display: flex; justify-content: space-around; gap: 12px; }
@@ -119,7 +185,7 @@ h2.module-title { margin-top: 0; font-size: 22px; font-weight: 700; color: var(-
 
 .jeopardy-modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(4px); display: flex; justify-content: center; align-items: center; z-index: 2000; }
 .jeopardy-modal-content { background: #fff; width: 90%; max-width: 750px; border-radius: var(--radius-lg); padding: 36px; text-align: center; box-shadow: var(--shadow-lg); }
-.jeopardy-modal-question { font-size: 28px; line-height: 1.5; margin-bottom: 16px; font-weight: 700; }
+.jeopardy-modal-question { font-size: 28px; line-height: 1.5; margin-bottom: 16px; font-weight: 700; white-space: pre-line; }
 .jeopardy-modal-answer { font-size: 20px; color: var(--success); margin-top: 16px; background: #ecfdf5; padding: 14px; border-radius: var(--radius-md); font-weight: 600; }
 .jeopardy-modal-question-en { font-size: 15px; color: var(--text-muted); font-style: italic; margin-bottom: 20px; }
 
@@ -149,6 +215,126 @@ h2.module-title { margin-top: 0; font-size: 22px; font-weight: 700; color: var(-
 .team-green { background: #f0fdf4; border: 1px solid #86efac; }
 .team-member { background: #fff; padding: 4px 10px; border-radius: 6px; font-size: 13px; font-weight: 600; box-shadow: var(--shadow-sm); }
 .loading-screen { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: #0f172a; color: #fff; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999; font-size: 20px; }
+
+/* ==================== 配对模式：双人PK ==================== */
+.pair-mode-bar { display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap; background: #fff; border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 10px 18px; margin-bottom: 16px; box-shadow: var(--shadow-sm); }
+.pair-mode-label { font-size: 14px; font-weight: 700; color: var(--text-muted); }
+.pair-mode-select { padding: 7px 14px; border-radius: 20px; border: 1px solid var(--border-color); font-size: 14px; font-weight: 700; color: var(--text-main); background: #f8fafc; cursor: pointer; outline: none; }
+.pair-mode-select:hover { border-color: var(--primary); }
+.pair-tool-btn { padding: 7px 16px; font-size: 13px; font-weight: 700; border: none; border-radius: 20px; background: var(--success); color: #fff; cursor: pointer; transition: all .2s; box-shadow: var(--shadow-sm); }
+.pair-tool-btn:hover { transform: translateY(-1px); filter: brightness(1.05); }
+.pair-tool-btn.ghost { background: #fff; color: var(--text-main); border: 1px solid var(--border-color); }
+.pair-tool-btn.ghost:hover { border-color: var(--primary); color: var(--primary); }
+.pair-mode-hint { font-size: 12px; font-weight: 600; color: var(--text-muted); background: #f1f5f9; padding: 5px 12px; border-radius: 14px; }
+
+.pk-panel { padding: 24px; }
+.pk-top-line { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 6px; }
+.pk-badge { font-size: 14px; font-weight: 800; color: var(--primary); background: #eff6ff; padding: 5px 14px; border-radius: 14px; }
+.pk-start-hint { font-size: 12px; color: var(--text-muted); font-weight: 600; }
+
+.pk-arena { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 16px; }
+.pk-player { border-radius: var(--radius-lg); padding: 16px; border: 2px solid var(--border-color); display: flex; flex-direction: column; transition: box-shadow .25s, transform .25s; }
+.pk-player.p1 { border-color: #fca5a5; background: #fff8f8; }
+.pk-player.p2 { border-color: #93c5fd; background: #f6faff; }
+.pk-player.p1.winner { box-shadow: 0 0 0 5px rgba(239,68,68,.22); }
+.pk-player.p2.winner { box-shadow: 0 0 0 5px rgba(59,130,246,.22); }
+.pk-player.done { transform: translateY(-2px); }
+
+.pk-player-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.pk-name { font-size: 17px; font-weight: 800; }
+.pk-player.p1 .pk-name { color: var(--team-wei); }
+.pk-player.p2 .pk-name { color: var(--team-wu); }
+.pk-timer { background: #065f46; color: #fff; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 16px; font-weight: 700; padding: 5px 12px; border-radius: 8px; letter-spacing: 1px; min-width: 84px; text-align: center; }
+.pk-player.p2 .pk-timer { background: #1e40af; }
+
+.pk-progress-row { display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 5px; }
+.pk-progress-bar { height: 8px; background: #e2e8f0; border-radius: 8px; overflow: hidden; margin-bottom: 14px; }
+.pk-progress-fill { height: 100%; width: 0; background: var(--team-wei); border-radius: 8px; transition: width .3s ease; }
+.pk-player.p2 .pk-progress-fill { background: var(--team-wu); }
+
+.pk-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.pk-card { background: #fff; border: 1px solid var(--border-color); border-radius: 10px; padding: 12px 8px; font-size: 15px; font-weight: 700; text-align: center; cursor: pointer; transition: all .15s; user-select: none; box-shadow: var(--shadow-sm); min-height: 56px; display: flex; align-items: center; justify-content: center; word-break: break-word; line-height: 1.3; }
+.pk-card:hover { border-color: var(--primary); }
+.pk-player.p1 .pk-card:hover { border-color: var(--team-wei); }
+.pk-player.p2 .pk-card:hover { border-color: var(--team-wu); }
+.pk-card.selected { background: #eff6ff; border-color: var(--primary); color: var(--primary); transform: translateY(-2px); }
+.pk-player.p1 .pk-card.selected { background: #fef2f2; border-color: var(--team-wei); color: var(--team-wei); }
+.pk-card.matched { background: #f1f5f9; border-color: #e2e8f0; color: transparent; box-shadow: none; pointer-events: none; opacity: .45; }
+.pk-card.wrong { animation: shake .4s; background: #fee2e2; border-color: var(--danger); color: #991b1b; }
+
+/* ============ 双人PK 汉字配对：单字方块 ============ */
+.pk-build-wrap { display: flex; flex-direction: column; gap: 10px; }
+.pk-current-sel { display: flex; align-items: center; gap: 8px; background: #fff; border: 1px dashed var(--border-color); border-radius: 10px; padding: 8px 14px; min-height: 42px; }
+.pk-sel-label { font-size: 13px; font-weight: 700; color: var(--text-muted); flex-shrink: 0; }
+.pk-sel-chars { font-size: 22px; font-weight: 800; letter-spacing: 3px; color: var(--primary); flex-grow: 1; text-align: left; }
+.pk-sel-chars.empty { color: #cbd5e1; letter-spacing: 0; font-weight: 500; font-size: 16px; }
+.pk-player.p1 .pk-sel-chars { color: var(--team-wei); }
+.pk-player.p2 .pk-sel-chars { color: var(--team-wu); }
+.pk-player.p1 .pk-sel-chars.empty { color: #cbd5e1; }
+.pk-player.p2 .pk-sel-chars.empty { color: #cbd5e1; }
+
+.pk-tile-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
+  gap: 10px;
+}
+.pk-tile {
+  aspect-ratio: 1 / 1;
+  background: #fff;
+  border: 2px solid var(--border-color);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--text-main);
+  cursor: pointer;
+  user-select: none;
+  transition: all .15s;
+  box-shadow: var(--shadow-sm);
+}
+.pk-tile:hover:not(.used) { border-color: var(--primary); color: var(--primary); transform: translateY(-2px); box-shadow: 0 6px 14px rgba(59,130,246,.18); }
+.pk-player.p1 .pk-tile:hover:not(.used) { border-color: var(--team-wei); color: var(--team-wei); box-shadow: 0 6px 14px rgba(239,68,68,.18); }
+.pk-player.p2 .pk-tile:hover:not(.used) { border-color: var(--team-wu); color: var(--team-wu); box-shadow: 0 6px 14px rgba(59,130,246,.18); }
+.pk-tile.selected {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(59,130,246,.35);
+}
+.pk-player.p1 .pk-tile.selected { background: var(--team-wei); border-color: var(--team-wei); }
+.pk-player.p2 .pk-tile.selected { background: var(--team-wu); border-color: var(--team-wu); }
+.pk-tile.used { opacity: 0.12; pointer-events: none; transform: scale(.75); }
+.pk-tile.wrong { animation: shake .4s; background: #fee2e2; border-color: var(--danger); color: #991b1b; }
+
+.pk-result-overlay { position: fixed; inset: 0; background: rgba(15,23,42,.72); backdrop-filter: blur(4px); display: flex; justify-content: center; align-items: center; z-index: 3000; }
+.pk-result-card { background: #fff; border-radius: 24px; padding: 36px 48px; text-align: center; box-shadow: var(--shadow-lg); max-width: 560px; width: 90%; animation: popIn .35s cubic-bezier(.2,1.3,.5,1); }
+@keyframes popIn { 0% { transform: scale(.85); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+.pk-trophy { font-size: 68px; line-height: 1; animation: bounceTrophy .8s ease infinite alternate; }
+@keyframes bounceTrophy { from { transform: translateY(0); } to { transform: translateY(-10px); } }
+.pk-result-title { font-size: 28px; font-weight: 900; margin: 14px 0 6px; }
+.pk-result-sub { font-size: 14px; color: var(--text-muted); font-weight: 600; margin-bottom: 22px; }
+.pk-result-times { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+.pk-result-time-item { flex: 1; min-width: 150px; border-radius: var(--radius-md); padding: 14px; font-weight: 700; }
+.pk-result-time-item.p1 { background: #fef2f2; color: var(--team-wei); border: 1px solid #fca5a5; }
+.pk-result-time-item.p2 { background: #eff6ff; color: var(--team-wu); border: 1px solid #93c5fd; }
+.pk-result-time-item .t-val { display: block; font-size: 24px; font-weight: 900; margin-top: 4px; font-family: ui-monospace, monospace; }
+
+.confetti-layer { position: fixed; inset: 0; pointer-events: none; z-index: 4000; overflow: hidden; }
+.confetti-piece { position: absolute; top: -20px; border-radius: 2px; opacity: 0; animation-name: confetti-fall; animation-timing-function: linear; animation-fill-mode: forwards; }
+@keyframes confetti-fall {
+  0%   { transform: translate3d(0, -10vh, 0) rotate(var(--r, 0deg)); opacity: 1; }
+  100% { transform: translate3d(0, 112vh, 0) rotate(calc(var(--r, 0deg) + 900deg)); opacity: .85; }
+}
+
+@media (max-width: 980px) {
+  .pk-arena { grid-template-columns: 1fr; }
+  .pk-grid { grid-template-columns: 1fr 1fr; }
+  .pk-tile-grid { grid-template-columns: repeat(auto-fill, minmax(52px, 1fr)); }
+  .pk-tile { font-size: 22px; }
+}
 </style>
 </head>
 <body>
@@ -198,8 +384,76 @@ h2.module-title { margin-top: 0; font-size: 22px; font-weight: 700; color: var(-
 
     <div class="main-content"><div class="panel-container">
 
-      <!-- 拼音配对 -->
-      <div class="panel" v-if="currentActivity==='v1_pinyin_match' && classData.module_1_vocab">
+      <!-- ============ 配对模式切换栏（仅四种配对活动显示） ============ -->
+      <div class="pair-mode-bar" v-if="isPkActivity">
+        <span class="pair-mode-label">配对模式：</span>
+        <select class="pair-mode-select" v-model="pairMode">
+          <option value="solo">🧍 单人模式（自由练习）</option>
+          <option value="pk">⚔️ 双人PK（计时赛）</option>
+        </select>
+        <template v-if="pairMode==='pk'">
+          <button class="pair-tool-btn" @click="newPkRound">🔄 新的一组（{{ pkRoundSize }}词）</button>
+          <button class="pair-tool-btn ghost" @click="restartPkRound">↺ 重新开始本轮</button>
+          <span class="pair-mode-hint">本轮已练：{{ pkCovered }} / {{ pk.pool.length }} 词</span>
+        </template>
+      </div>
+
+      <!-- ============ 双人PK 战场 ============ -->
+      <div class="panel pk-panel" v-if="pairMode==='pk' && isPkActivity">
+        <div class="pk-top-line">
+          <span class="pk-badge">⚔️ {{ currentActivityName }} · 双人计时赛</span>
+          <span class="pk-start-hint">
+            <template v-if="pk.roundType==='build'">👆 按顺序点击单字组词，双方同时开始计时</template>
+            <template v-else>👆 任一方开始点击，双方同时开始计时</template>
+          </span>
+        </div>
+
+        <div v-if="pk.pool.length === 0" style="padding:40px; color:var(--text-muted); font-weight:600;">
+          当前课程暂无可用于双人PK的配对数据 🙈
+        </div>
+
+        <div class="pk-arena" v-else>
+          <div class="pk-player" v-for="key in ['p1','p2']" :key="key"
+               :class="[key, pk.players[key].done ? 'done' : '', (pk.finished && pk.winner === key) ? 'winner' : '']">
+            <div class="pk-player-header">
+              <span class="pk-name">{{ key === 'p1' ? '🔴 玩家 1' : '🔵 玩家 2' }}</span>
+              <span class="pk-timer">⏱ {{ formatPkTime(pk.players[key].time) }}</span>
+            </div>
+            <div class="pk-progress-row">
+              <span>配对进度</span>
+              <span>{{ pk.players[key].solved }} / {{ pk.players[key].total }}</span>
+            </div>
+            <div class="pk-progress-bar">
+              <div class="pk-progress-fill" :style="{ width: pkProgressPct(key) + '%' }"></div>
+            </div>
+
+            <!-- 普通配对（双卡片） -->
+            <div class="pk-grid" v-if="pk.roundType !== 'build'">
+              <div class="pk-card" v-for="c in pk.players[key].cards" :key="c.id"
+                   :class="{ matched: c.matched, selected: c.selected, wrong: c.wrong }"
+                   @click="clickPkCard(key, c)">{{ c.text }}</div>
+            </div>
+
+            <!-- 汉字配对：单字方块 -->
+            <div v-else class="pk-build-wrap">
+              <div class="pk-current-sel">
+                <span class="pk-sel-label">当前：</span>
+                <span class="pk-sel-chars" :class="{ empty: pk.players[key].selection.length === 0 }">
+                  {{ pkSelectionText(key) }}
+                </span>
+              </div>
+              <div class="pk-tile-grid">
+                <div class="pk-tile" v-for="t in pk.players[key].tiles" :key="t.id"
+                     :class="{ used: t.used, selected: pk.players[key].selection.includes(t.id), wrong: t.wrong }"
+                     @click="clickPkTile(key, t)">{{ t.char }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 拼音配对（单人） -->
+      <div class="panel" v-if="pairMode==='solo' && currentActivity==='v1_pinyin_match' && classData.module_1_vocab">
         <h2 class="module-title">拼音汉字配对（第{{pinyinMatch.round+1}}/{{classData.module_1_vocab.pinyin_match.length}}轮）</h2>
         <div class="matching-grid">
           <div><h3>汉字</h3><div v-for="item in pinyinMatch.currentHanzi" :key="item.id" class="matching-item" :class="{selected:pinyinMatch.selectedHanzi?.id===item.id,wrong:item.isWrong}" @click="selectHanzi(item)">{{item.text}}</div></div>
@@ -208,8 +462,8 @@ h2.module-title { margin-top: 0; font-size: 22px; font-weight: 700; color: var(-
         <button v-if="pinyinMatch.isRoundComplete" class="next-btn" @click="nextPinyinMatchRound">下一轮</button>
       </div>
 
-      <!-- 词语搭配 -->
-      <div class="panel" v-if="currentActivity==='v2_collocation_match'">
+      <!-- 词语搭配（单人） -->
+      <div class="panel" v-if="pairMode==='solo' && currentActivity==='v2_collocation_match'">
         <h2 class="module-title">词语搭配（第{{collocationMatch.round+1}}/{{collocationMatch.chunks.length || 1}}轮）</h2>
         <div class="matching-grid">
           <div>
@@ -227,12 +481,37 @@ h2.module-title { margin-top: 0; font-size: 22px; font-weight: 700; color: var(-
         </div>
       </div>
 
-      <!-- 汉字配对 -->
-      <div class="panel" v-if="currentActivity==='v3_char_match' && classData.module_1_vocab">
-        <h2 class="module-title">汉字配对游戏（第{{charMatch.round+1}}/{{classData.module_1_vocab.char_match.length}}轮）</h2>
-        <div style="display:flex; flex-wrap:wrap; gap:12px; justify-content:center; max-width:600px; margin:0 auto;"><div v-for="c in charMatch.charItems" :key="c.id" class="chunk-btn" :style="{visibility:!c.active?'hidden':'visible'}" @click="onCharClick(c)">{{c.char}}</div></div>
-        <div style="background:var(--bg-main); margin:20px auto; border-radius:var(--radius-md); padding:12px 20px; display:flex; align-items:center; gap:12px; max-width:400px;"><span style="font-size:20px; font-weight:700; flex-grow:1;">{{charMatch.selection.map(c=>c.char).join('')||'请点击汉字...'}}</span><button @click="clearCharSelection" class="next-btn" style="margin:0; background:var(--warning);">清除</button></div>
-        <button v-if="charMatch.isRoundComplete" class="next-btn" @click="nextCharMatchRound">下一轮</button>
+      <!-- ============ 汉字配对（单人）— 单字方块按序组词 ============ -->
+      <div class="panel" v-if="pairMode==='solo' && currentActivity==='v3_char_match'">
+        <h2 class="module-title">汉字配对游戏（第{{charMatch.round+1}}/{{charMatch.totalRounds}}轮）</h2>
+
+        <div class="char-progress">本轮已配成 {{charMatch.matchedCount}} / {{charMatch.totalWordsInRound}} 个词语</div>
+
+        <div v-if="charMatch.charItems.length === 0" style="padding:30px; color:var(--text-muted); font-weight:600;">
+          当前课程暂无可用于汉字配对的词语 🙈
+        </div>
+
+        <template v-else>
+          <!-- 单字方块池（乱序） -->
+          <div class="char-tile-wrap">
+            <div v-for="c in charMatch.charItems" :key="c.id"
+                 class="char-tile"
+                 :class="{ 'char-tile-used': !c.active, picked: charMatch.selection.includes(c), wrong: c.wrong }"
+                 @click="onCharClick(c)">{{ c.char }}</div>
+          </div>
+
+          <!-- 当前选择显示 + 清除 -->
+          <div class="char-answer-box">
+            <span class="char-answer-text" :class="{ placeholder: charMatch.selection.length === 0 }">
+              {{ charMatch.selection.length ? charMatch.selection.map(c => c.char).join('') : '请点击汉字...' }}
+            </span>
+            <button @click="clearCharSelection" class="next-btn" style="margin:0; background:var(--warning);">清除</button>
+          </div>
+
+          <button v-if="charMatch.isRoundComplete" class="next-btn" @click="nextCharMatchRound">
+            {{ charMatch.round < charMatch.totalRounds - 1 ? '下一轮 ➔' : '🔄 重新开始' }}
+          </button>
+        </template>
       </div>
 
       <!-- 我说你猜 -->
@@ -253,8 +532,8 @@ h2.module-title { margin-top: 0; font-size: 22px; font-weight: 700; color: var(-
         <div class="interaction-bar"><button v-if="vocabPractice.showAnswer" class="next-btn" @click="nextVocabPractice">下一题</button></div>
       </div>
 
-      <!-- 中俄配对 -->
-      <div class="panel" v-if="currentActivity==='v6_translate_match'">
+      <!-- 中俄配对（单人） -->
+      <div class="panel" v-if="pairMode==='solo' && currentActivity==='v6_translate_match'">
         <h2 class="module-title">中俄配对（第{{ruMatch.round+1}}/{{ruMatch.totalRounds || 1}}轮）</h2>
         <div class="matching-grid">
           <div><h3>中文</h3><div v-for="item in ruMatch.currentZh" :key="item.id" class="matching-item" :class="{selected:ruMatch.selectedZh?.id===item.id,wrong:item.isWrong}" @click="selectRuZh(item,'zh')">{{item.text}}</div></div>
@@ -394,6 +673,41 @@ h2.module-title { margin-top: 0; font-size: 22px; font-weight: 700; color: var(-
     </div>
   </div>
 
+  <!-- ============ 双人PK 结算弹窗 ============ -->
+  <div v-if="pk.showResult" class="pk-result-overlay">
+    <div class="pk-result-card">
+      <div class="pk-trophy">🏆</div>
+      <h2 class="pk-result-title" :style="{color: pk.winner === 'p1' ? 'var(--team-wei)' : 'var(--team-wu)'}">
+        {{ pk.winner === 'p1' ? '玩家 1 获胜！' : (pk.winner === 'p2' ? '玩家 2 获胜！' : '平局！') }}
+      </h2>
+      <p class="pk-result-sub">{{ currentActivityName }} · 双人计时赛 · 共 {{ pk.players.p1.total }} 组配对</p>
+      <div class="pk-result-times">
+        <div class="pk-result-time-item p1">
+          🔴 玩家 1
+          <span class="t-val">{{ formatPkTime(pk.players.p1.time) }}</span>
+          <span style="font-size:12px; font-weight:600;">{{ pk.players.p1.solved }} / {{ pk.players.p1.total }}</span>
+        </div>
+        <div class="pk-result-time-item p2">
+          🔵 玩家 2
+          <span class="t-val">{{ formatPkTime(pk.players.p2.time) }}</span>
+          <span style="font-size:12px; font-weight:600;">{{ pk.players.p2.solved }} / {{ pk.players.p2.total }}</span>
+        </div>
+      </div>
+      <div class="interaction-bar">
+        <button class="next-btn" @click="restartPkRound" style="background:var(--success);">🔄 再战一轮</button>
+        <button class="next-btn" @click="newPkRound" style="background:var(--purple);">➡️ 下一组词</button>
+        <button class="next-btn" @click="pk.showResult=false" style="background:#64748b;">关闭</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 撒花层 -->
+  <div class="confetti-layer" v-if="confettiPieces.length">
+    <div class="confetti-piece" v-for="p in confettiPieces" :key="p.id"
+         :style="{ left: p.left + '%', width: p.w + 'px', height: p.h + 'px', backgroundColor: p.color,
+                   animationDelay: p.delay + 's', animationDuration: p.duration + 's', '--r': p.rot + 'deg' }"></div>
+  </div>
+
   <button v-show="!isLiveMode" class="global-echo-trigger" @click="isLiveMode=true">💬 回音壁</button>
   <div class="floating-echo-wall" :class="{hidden:!isLiveMode}">
     <div class="live-header-inline"><h3>📢 回音壁</h3><div style="display:flex; gap:8px; align-items:center;"><div class="qrcode-container"><img :src="qrCodeUrl"></div><button class="close-echo-btn" @click="isLiveMode=false">×</button></div></div>
@@ -472,7 +786,386 @@ createApp({
       }
     };
 
-    // 1. 拼音配对
+    // ==================== 通用工具 ====================
+    const shuffleArray = (arr) => {
+      const a = [...arr];
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    };
+
+    // ==================== 双人PK 配对系统 ====================
+    const PK_ROUND_SIZE = 5;
+    const pairMode = ref('solo');                       // 'solo' | 'pk'
+    const pkActivityIds = ['v1_pinyin_match','v2_collocation_match','v3_char_match','v6_translate_match'];
+    const isPkActivity = computed(() => pkActivityIds.includes(currentActivity.value));
+    const currentActivityName = computed(() => (currentActivities.value.find(a => a.id === currentActivity.value) || {}).name || '');
+
+    const pk = reactive({
+      pool: [], poolIndex: 0, started: false, finished: false, showResult: false,
+      winner: '', startTs: 0, timerId: null, roundId: 0,
+      roundType: 'match',   // 'match' 普通双卡片 | 'build' 汉字配单单字组词
+      words: [],            // build 模式：本轮目标词语
+      players: {
+        p1: { cards: [], tiles: [], selection: [], matchedWords: [], solved: 0, total: 0, time: 0, done: false, sel: [] },
+        p2: { cards: [], tiles: [], selection: [], matchedWords: [], solved: 0, total: 0, time: 0, done: false, sel: [] }
+      }
+    });
+
+    const confettiPieces = ref([]);
+
+    // ---- 题库构造器 ----
+    function buildPinyinPool(){
+      const groups = classData.value.module_1_vocab?.pinyin_match || [];
+      const map = classData.value.pinyin_map || {};
+      const pool = [];
+      groups.forEach(g => {
+        (g || []).forEach(w => {
+          const py = map[w];
+          if (w && py) pool.push({ left: w, right: py });
+        });
+      });
+      return pool;
+    }
+    function buildCollocationPool(){
+      return (classData.value.collocations || [])
+        .filter(p => p && p.left && p.right)
+        .map(p => ({ left: p.left, right: p.right }));
+    }
+    function buildCharPool(){
+      // 汉字配对PK：以本课全部词语为词库
+      const pool = [];
+      const seen = new Set();
+      collectCourseWords().forEach(w => {
+        if (!w || w.length < 2 || seen.has(w)) return;
+        seen.add(w);
+        // right 字段此处不再使用（build 模式只取 left）
+        pool.push({ left: w, right: w });
+      });
+      return pool;
+    }
+    function buildTranslatePool(){
+      const dict = classData.value.translation_dict || {};
+      return Object.keys(dict)
+        .filter(k => k && dict[k])
+        .map(k => ({ left: k, right: dict[k] }));
+    }
+    const pkPoolBuilders = {
+      v1_pinyin_match: buildPinyinPool,
+      v2_collocation_match: buildCollocationPool,
+      v3_char_match: buildCharPool,
+      v6_translate_match: buildTranslatePool
+    };
+
+    // ---- 轮次控制 ----
+    function setupPkForActivity(){
+      const builder = pkPoolBuilders[currentActivity.value];
+      if (!builder) return;
+      pk.pool = builder();
+      pk.poolIndex = 0;
+      startPkRound();
+    }
+
+    function startPkRound(){
+      clearPkTimer();
+      pk.roundId++;
+      pk.started = false;
+      pk.finished = false;
+      pk.showResult = false;
+      pk.winner = '';
+      pk.startTs = 0;
+      pk.words = [];
+      // 判断本轮类型
+      pk.roundType = (currentActivity.value === 'v3_char_match') ? 'build' : 'match';
+
+      const pool = pk.pool;
+      if (!pool.length) {
+        ['p1','p2'].forEach(k => {
+          const pl = pk.players[k];
+          pl.cards = []; pl.tiles = []; pl.selection = []; pl.matchedWords = [];
+          pl.total = 0; pl.solved = 0; pl.time = 0; pl.done = false; pl.sel = [];
+        });
+        return;
+      }
+
+      const size = Math.min(PK_ROUND_SIZE, pool.length);
+
+      if (pk.roundType === 'build') {
+        // -------- 汉字配对：单字方块组词 --------
+        const words = [];
+        for (let i = 0; i < size; i++) {
+          words.push(pool[(pk.poolIndex + i) % pool.length].left);
+        }
+        pk.words = words;
+
+        // 统计字符频率
+        const freq = {};
+        words.forEach(w => { for (const ch of w) freq[ch] = (freq[ch] || 0) + 1; });
+        const tileTemplates = [];
+        let tid = 0;
+        for (const ch in freq) {
+          for (let i = 0; i < freq[ch]; i++) {
+            tileTemplates.push({ id: tid++, char: ch });
+          }
+        }
+        // 打乱全部单字（双方共享同一顺序，保证公平）
+        const shuffledTiles = shuffleArray(tileTemplates);
+
+        ['p1','p2'].forEach(k => {
+          const pl = pk.players[k];
+          pl.cards = [];
+          pl.tiles = shuffledTiles.map(t => ({ ...t, used: false, wrong: false }));
+          pl.selection = [];
+          pl.matchedWords = [];
+          pl.sel = [];
+          pl.solved = 0;
+          pl.total = words.length;
+          pl.time = 0;
+          pl.done = false;
+        });
+      } else {
+        // -------- 普通配对：双卡片 --------
+        const pairs = [];
+        for (let i = 0; i < size; i++) {
+          const p = pool[(pk.poolIndex + i) % pool.length];
+          pairs.push({ pid: 'p' + i + '_' + pk.roundId, left: p.left, right: p.right });
+        }
+
+        ['p1','p2'].forEach(key => {
+          const pl = pk.players[key];
+          const cards = [];
+          pairs.forEach(p => {
+            cards.push({ id: p.pid + '_L', pid: p.pid, side: 'L', text: p.left,  matched: false, selected: false, wrong: false });
+            cards.push({ id: p.pid + '_R', pid: p.pid, side: 'R', text: p.right, matched: false, selected: false, wrong: false });
+          });
+          pl.cards = shuffleArray(cards);
+          pl.tiles = [];
+          pl.selection = [];
+          pl.matchedWords = [];
+          pl.sel = [];
+          pl.solved = 0;
+          pl.total = pairs.length;
+          pl.time = 0;
+          pl.done = false;
+        });
+      }
+    }
+
+    function restartPkRound(){ startPkRound(); }
+
+    function newPkRound(){
+      if (pk.pool.length) {
+        pk.poolIndex = (pk.poolIndex + PK_ROUND_SIZE) % pk.pool.length;
+      }
+      startPkRound();
+    }
+
+    const pkCovered = computed(() => {
+      const total = pk.pool.length;
+      if (!total) return 0;
+      return Math.min(pk.poolIndex + Math.min(PK_ROUND_SIZE, total), total);
+    });
+
+    // ---- 计时 ----
+    function startPkTimer(){
+      if (pk.timerId) return;
+      pk.started = true;
+      pk.startTs = Date.now();
+      pk.timerId = setInterval(() => {
+        const el = Date.now() - pk.startTs;
+        ['p1','p2'].forEach(k => {
+          if (!pk.players[k].done) pk.players[k].time = el;
+        });
+      }, 60);
+    }
+    function clearPkTimer(){
+      if (pk.timerId) { clearInterval(pk.timerId); pk.timerId = null; }
+    }
+    function formatPkTime(ms){
+      const t = Math.max(0, Math.floor(ms / 100));
+      const m = Math.floor(t / 600);
+      const s = Math.floor((t % 600) / 10);
+      const d = t % 10;
+      return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}.${d}`;
+    }
+    function pkProgressPct(key){
+      const pl = pk.players[key];
+      if (!pl.total) return 0;
+      return Math.round(pl.solved / pl.total * 100);
+    }
+
+    // ---- 交互：普通配对 ----
+    function clickPkCard(key, card){
+      if (pk.finished) return;
+      const pl = pk.players[key];
+      if (pl.done) return;
+      if (card.matched || card.wrong) return;
+
+      const selIdx = pl.sel.indexOf(card.id);
+      if (selIdx > -1) {
+        pl.sel.splice(selIdx, 1);
+        card.selected = false;
+        return;
+      }
+      if (pl.sel.length >= 2) return;
+
+      if (!pk.started) startPkTimer();
+
+      card.selected = true;
+      pl.sel.push(card.id);
+
+      if (pl.sel.length === 2) {
+        const a = pl.cards.find(c => c.id === pl.sel[0]);
+        const b = pl.cards.find(c => c.id === pl.sel[1]);
+        if (!a || !b) { pl.sel = []; return; }
+
+        if (a.pid === b.pid && a.side !== b.side) {
+          a.matched = true; b.matched = true;
+          a.selected = false; b.selected = false;
+          pl.solved++;
+          pl.sel = [];
+          playSound('correct');
+          if (pl.solved >= pl.total) finishPkPlayer(key);
+        } else {
+          a.wrong = true; b.wrong = true;
+          a.selected = false; b.selected = false;
+          playSound('wrong');
+          const rid = pk.roundId;
+          setTimeout(() => {
+            if (pk.roundId !== rid) return;
+            a.wrong = false; b.wrong = false;
+            pl.sel = [];
+          }, 420);
+        }
+      }
+    }
+
+    // ---- 交互：汉字配对（单字组词） ----
+    function clickPkTile(key, tile){
+      if (pk.finished) return;
+      const pl = pk.players[key];
+      if (pl.done) return;
+      if (tile.used || tile.wrong) return;
+
+      if (!pk.started) startPkTimer();
+
+      // 再次点击已选中的字 → 取消选中
+      const sIdx = pl.selection.indexOf(tile.id);
+      if (sIdx > -1) {
+        pl.selection.splice(sIdx, 1);
+        return;
+      }
+
+      pl.selection.push(tile.id);
+
+      const str = pl.selection.map(id => {
+        const t = pl.tiles.find(x => x.id === id);
+        return t ? t.char : '';
+      }).join('');
+
+      const words = pk.words;
+
+      // 是否正好组成一个尚未配对成功的词
+      let matchedIdx = -1;
+      for (let wi = 0; wi < words.length; wi++) {
+        if (!pl.matchedWords.includes(wi) && words[wi] === str) {
+          matchedIdx = wi;
+          break;
+        }
+      }
+
+      if (matchedIdx > -1) {
+        // ✅ 配对成功
+        playSound('correct');
+        pl.selection.forEach(id => {
+          const t = pl.tiles.find(x => x.id === id);
+          if (t) t.used = true;
+        });
+        pl.selection = [];
+        pl.matchedWords.push(matchedIdx);
+        pl.solved++;
+        if (pl.solved >= pl.total) finishPkPlayer(key);
+        return;
+      }
+
+      // 是否仍是某个未配对词的前缀（可以继续点击）
+      const isPrefix = words.some((w, wi) => !pl.matchedWords.includes(wi) && w.startsWith(str));
+
+      if (!isPrefix) {
+        // ❌ 顺序错误，抖动后清空
+        playSound('wrong');
+        const sel = [...pl.selection];
+        sel.forEach(id => {
+          const t = pl.tiles.find(x => x.id === id);
+          if (t) t.wrong = true;
+        });
+        const rid = pk.roundId;
+        setTimeout(() => {
+          if (pk.roundId !== rid) return;
+          sel.forEach(id => {
+            const t = pl.tiles.find(x => x.id === id);
+            if (t) t.wrong = false;
+          });
+          pl.selection = [];
+        }, 450);
+      }
+    }
+
+    // 显示当前选择的字
+    function pkSelectionText(key){
+      const pl = pk.players[key];
+      const txt = pl.selection.map(id => {
+        const t = pl.tiles.find(x => x.id === id);
+        return t ? t.char : '';
+      }).join('');
+      return txt || '点击单字组词...';
+    }
+
+    function finishPkPlayer(key){
+      const pl = pk.players[key];
+      pl.done = true;
+      pl.time = pk.startTs ? (Date.now() - pk.startTs) : 0;
+      pl.sel = [];
+      pl.selection = [];
+      clearPkTimer();
+      if (!pk.winner) {
+        pk.winner = key;
+        pk.finished = true;
+        pk.showResult = true;
+        fireConfetti();
+      }
+    }
+
+    // ---- 撒花 ----
+    function fireConfetti(){
+      const colors = ['#ef4444','#f59e0b','#10b981','#3b82f6','#8b5cf6','#ec4899','#facc15'];
+      const pieces = [];
+      for (let i = 0; i < 140; i++) {
+        pieces.push({
+          id: i,
+          left: Math.random() * 100,
+          delay: Math.random() * 0.8,
+          duration: 2.2 + Math.random() * 1.8,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          w: 6 + Math.random() * 8,
+          h: 8 + Math.random() * 10,
+          rot: Math.floor(Math.random() * 360)
+        });
+      }
+      confettiPieces.value = pieces;
+      setTimeout(() => { confettiPieces.value = []; }, 5200);
+    }
+
+    // ---- 模式 / 活动切换时重建 ----
+    watch([pairMode, currentActivity], ([m, act]) => {
+      if (m === 'pk' && pkPoolBuilders[act]) {
+        setupPkForActivity();
+      }
+    });
+
+    // ==================== 1. 拼音配对（单人） ====================
     const pinyinMatch = reactive({ round:0, currentHanzi:[], currentPinyin:[], selectedHanzi:null, selectedPinyin:null, isRoundComplete: computed(()=>pinyinMatch.currentHanzi.length===0) });
     function setupPinyinMatchRound(i){ if(!classData.value.module_1_vocab) return; const rd=classData.value.module_1_vocab.pinyin_match[i]; if(!rd)return; const items=rd.map((w,id)=>({id,word:w,pinyin:classData.value.pinyin_map[w]})); pinyinMatch.currentHanzi=items.map(x=>({id:x.id,text:x.word,isWrong:false})).sort(()=>Math.random()-.5); pinyinMatch.currentPinyin=items.map(x=>({id:x.id,text:x.pinyin,isWrong:false})).sort(()=>Math.random()-.5); pinyinMatch.selectedHanzi=pinyinMatch.selectedPinyin=null; }
     function selectHanzi(h){ pinyinMatch.selectedHanzi=h; if(pinyinMatch.selectedPinyin)checkPinyinMatch(); }
@@ -486,7 +1179,7 @@ createApp({
     }
     function nextPinyinMatchRound(){ pinyinMatch.round=(pinyinMatch.round+1)%(classData.value.module_1_vocab?.pinyin_match.length || 1); setupPinyinMatchRound(pinyinMatch.round); }
 
-    // 2. 词语搭配
+    // ==================== 2. 词语搭配（单人） ====================
     const collocationMatch = reactive({ round:0, chunks:[], currentLeft:[], currentRight:[], selectedItem:null, isRoundComplete: computed(()=>collocationMatch.currentLeft.length>0 && collocationMatch.currentLeft.every(i=>i.isCorrect)) });
     function setupCollocationMatch(){ 
       const pairs = classData.value.collocations; if(!pairs||!pairs.length)return; 
@@ -515,47 +1208,172 @@ createApp({
       } 
     }
 
-    // 3. 汉字配对
-    const charMatch = reactive({ round:0, charItems:[], selection:[], matchedCount:0, totalWordsInRound:0, isRoundComplete: computed(()=>charMatch.totalWordsInRound>0&&charMatch.matchedCount===charMatch.totalWordsInRound) });
-    function setupCharMatchRound(i){ 
-      if(!classData.value.module_1_vocab) return;
-      const words=classData.value.module_1_vocab.char_match[i]; if(!words)return; 
-      charMatch.totalWordsInRound=words.length; charMatch.matchedCount=0; charMatch.selection=[]; 
-      let items=[]; 
-      words.forEach((w,wid)=>{ w.split('').forEach((c,cid)=>{ items.push({id:`${wid}_${cid}`,char:c,word:w,active:true}); }); }); 
-      charMatch.charItems=items.sort(()=>Math.random()-.5); 
-    }
-    function onCharClick(item){ 
-      if(!item.active)return; charMatch.selection.push(item); 
-      const str=charMatch.selection.map(c=>c.char).join(''); 
-      const words=classData.value.module_1_vocab.char_match[charMatch.round]; 
-      const matched=words.find(w=>w===str); 
-      if(matched){ 
-        playSound('correct'); charMatch.selection.forEach(s=>{ const g=charMatch.charItems.find(i=>i.id===s.id); if(g)g.active=false; }); 
-        charMatch.selection=[]; charMatch.matchedCount++; 
-      } else { 
-        const isPrefix=words.some(w=>w.startsWith(str)); if(!isPrefix) { playSound('wrong'); clearCharSelection(); } 
-      } 
-    }
-    function clearCharSelection(){ charMatch.selection=[]; }
-    function nextCharMatchRound(){ charMatch.round=(charMatch.round+1)%(classData.value.module_1_vocab?.char_match.length || 1); setupCharMatchRound(charMatch.round); }
+    // ==================== 3. 汉字配对（单人）—— 单字方块按序组词 ====================
+    const CHAR_ROUND_SIZE = 10;  // 每组词语数量
 
-    watch(currentActivity, (v) => { if (v === 'v3_char_match' && charMatch.charItems.length === 0) setupCharMatchRound(0); });
+    // 收集本课全部词语
+    function collectCourseWords() {
+      const vocab = classData.value.module_1_vocab || {};
+      const words = new Set();
 
-    // 4. 我说你猜
+      const addWord = (w) => {
+        if (typeof w !== 'string') return;
+        const t = w.trim();
+        if (t.length >= 2 && t.length <= 4) words.add(t);
+      };
+
+      const walk = (data) => {
+        if (!data) return;
+        if (Array.isArray(data)) {
+          data.forEach(item => walk(item));
+        } else if (typeof data === 'string') {
+          addWord(data);
+        }
+      };
+
+      // 优先使用 char_match 中所有词语
+      walk(vocab.char_match);
+      // 若 char_match 为空，则使用 pinyin_match 中的所有词语
+      if (words.size === 0) {
+        walk(vocab.pinyin_match);
+      }
+      // 若还是为空，则使用 guess_words
+      if (words.size === 0 && Array.isArray(vocab.guess_words)) {
+        vocab.guess_words.forEach(w => {
+          if (typeof w === 'string') addWord(w);
+          else if (w && w.target_word) addWord(w.target_word);
+        });
+      }
+
+      return Array.from(words);
+    }
+
+    // 构建分组：全部词语打乱后按 CHAR_ROUND_SIZE 拆分
+    function buildCharGroups() {
+      const all = shuffleArray(collectCourseWords());
+      const groups = [];
+      for (let i = 0; i < all.length; i += CHAR_ROUND_SIZE) {
+        groups.push(all.slice(i, i + CHAR_ROUND_SIZE));
+      }
+      return groups;
+    }
+
+    const charMatch = reactive({
+      round: 0,
+      groups: [],
+      totalRounds: 0,
+      charItems: [],
+      selection: [],
+      matchedCount: 0,
+      totalWordsInRound: 0,
+      isRoundComplete: computed(() =>
+        charMatch.totalWordsInRound > 0 && charMatch.matchedCount === charMatch.totalWordsInRound
+      )
+    });
+
+    function setupCharMatchRound(i) {
+      // 懒加载分组
+      if (!charMatch.groups.length) {
+        charMatch.groups = buildCharGroups();
+        charMatch.totalRounds = charMatch.groups.length;
+        charMatch.round = 0;
+        i = 0;
+      }
+      const words = charMatch.groups[i];
+      if (!words || !words.length) {
+        charMatch.charItems = [];
+        charMatch.totalWordsInRound = 0;
+        charMatch.matchedCount = 0;
+        charMatch.selection = [];
+        return;
+      }
+
+      charMatch.totalWordsInRound = words.length;
+      charMatch.matchedCount = 0;
+      charMatch.selection = [];
+
+      // 统计字符频率（同一字符出现多次则生成多个方块）
+      const freq = {};
+      words.forEach(w => {
+        for (const c of w) freq[c] = (freq[c] || 0) + 1;
+      });
+
+      const items = [];
+      let id = 0;
+      for (const c in freq) {
+        for (let k = 0; k < freq[c]; k++) {
+          items.push({ id: id++, char: c, active: true, wrong: false });
+        }
+      }
+
+      // 打乱全部单字方块
+      charMatch.charItems = shuffleArray(items);
+    }
+
+    function onCharClick(item) {
+      if (!item.active) return;
+
+      // 若已选中则取消
+      const idx = charMatch.selection.indexOf(item);
+      if (idx > -1) {
+        charMatch.selection.splice(idx, 1);
+        return;
+      }
+
+      charMatch.selection.push(item);
+
+      const str = charMatch.selection.map(c => c.char).join('');
+      const words = charMatch.groups[charMatch.round] || [];
+      const matched = words.find(w => w === str);
+
+      if (matched) {
+        // 匹配成功：隐藏已用方块
+        playSound('correct');
+        charMatch.selection.forEach(s => { s.active = false; });
+        charMatch.selection = [];
+        charMatch.matchedCount++;
+      } else {
+        // 判断是否为某词前缀
+        const isPrefix = words.some(w => w.startsWith(str));
+        if (!isPrefix) {
+          playSound('wrong');
+          // 抖动后清除
+          const sel = [...charMatch.selection];
+          sel.forEach(s => { s.wrong = true; });
+          setTimeout(() => {
+            sel.forEach(s => { s.wrong = false; });
+            charMatch.selection = [];
+          }, 400);
+        }
+      }
+    }
+
+    function clearCharSelection() {
+      charMatch.selection = [];
+    }
+
+    function nextCharMatchRound() {
+      if (!charMatch.totalRounds) return;
+      charMatch.round = (charMatch.round + 1) % charMatch.totalRounds;
+      setupCharMatchRound(charMatch.round);
+    }
+
+    watch(currentActivity, (v) => { if (v === 'v3_char_match') setupCharMatchRound(charMatch.round); });
+
+    // ==================== 4. 我说你猜 ====================
     const guessGame = reactive({ allWords:[], currentWordIndex:-1, correctList:[], wrongList:[], time:180, timer:null, isActive:false });
     const formattedTime = computed(()=>`${String(Math.floor(guessGame.time/60)).padStart(2,'0')}:${String(guessGame.time%60).padStart(2,'0')}`);
     const currentGuessWord = computed(()=>guessGame.allWords[guessGame.currentWordIndex]||null);
     function startGuessGame(){ clearInterval(guessGame.timer); guessGame.allWords=[...(classData.value.module_1_vocab?.guess_words || [])].sort(()=>Math.random()-.5); guessGame.currentWordIndex=0; guessGame.correctList=[]; guessGame.wrongList=[]; guessGame.time=180; guessGame.isActive=true; guessGame.timer=setInterval(()=>{ guessGame.time--; if(guessGame.time<=0){ clearInterval(guessGame.timer); guessGame.isActive=false; } },1000); }
     function recordGuess(ok){ if(!guessGame.isActive||!currentGuessWord.value)return; if(ok) { playSound('correct'); guessGame.correctList.push(currentGuessWord.value); } else { playSound('wrong'); guessGame.wrongList.push(currentGuessWord.value); } if(guessGame.currentWordIndex<guessGame.allWords.length-1)guessGame.currentWordIndex++; else{ clearInterval(guessGame.timer); guessGame.isActive=false; } }
 
-    // 5. 词义测验
+    // ==================== 5. 词义测验 ====================
     const vocabPractice = reactive({ index:0, showAnswer:false, selectedOption:'' });
     const currentVocabQuestion = computed(()=>(classData.value.module_9_vocab_practice || [])[vocabPractice.index] || {question:'', options:[], answer:''});
     function checkVocabPractice(opt){ vocabPractice.selectedOption=opt; vocabPractice.showAnswer=true; if(opt === currentVocabQuestion.value.answer) playSound('correct'); else playSound('wrong'); }
     function nextVocabPractice(){ vocabPractice.index=(vocabPractice.index+1)%(classData.value.module_9_vocab_practice?.length || 1); vocabPractice.showAnswer=false; vocabPractice.selectedOption=''; }
 
-    // 6. 中俄配对
+    // ==================== 6. 中俄配对（单人） ====================
     const ruMatch = reactive({ round:0, chunks:[], totalRounds:0, currentZh:[], currentRu:[], selectedZh:null, selectedRu:null, isRoundComplete: computed(()=>ruMatch.currentZh.length===0&&ruMatch.totalRounds>0) });
     function initRuMatch(){ const dict=classData.value.translation_dict; if(!dict)return; const keys=Object.keys(dict).sort(()=>Math.random()-.5); const size=6; ruMatch.chunks=[]; for(let i=0;i<keys.length;i+=size)ruMatch.chunks.push(keys.slice(i,i+size)); ruMatch.totalRounds=ruMatch.chunks.length; ruMatch.round=0; setupRuMatchRound(); }
     function setupRuMatchRound(){ const rk=ruMatch.chunks[ruMatch.round]; if(!rk)return; ruMatch.currentZh=rk.map(k=>({id:k,text:k,isWrong:false})).sort(()=>Math.random()-.5); ruMatch.currentRu=rk.map(k=>({id:k,text:classData.value.translation_dict[k],isWrong:false})).sort(()=>Math.random()-.5); ruMatch.selectedZh=ruMatch.selectedRu=null; }
@@ -569,7 +1387,7 @@ createApp({
     }
     function nextRuMatchRound(){ ruMatch.round=(ruMatch.round+1)%ruMatch.totalRounds; setupRuMatchRound(); }
 
-    // 7. 看图猜词 / 炸弹
+    // ==================== 7. 看图猜词 / 炸弹 ====================
     const bombWords = ref([]);
     let bombTimer=null;
     function initBombWords() {
@@ -578,7 +1396,7 @@ createApp({
     function handleBombClick(word){ if(word.status==='safe')return; if(word.status==='hidden'){ bombWords.value.forEach(w=>{if(w.status==='active')w.timeLeft=0;}); clearInterval(bombTimer); word.status='active'; word.timeLeft=100; bombTimer=setInterval(()=>{ word.timeLeft-=1; if(word.timeLeft<=0){ clearInterval(bombTimer); playSound('wrong'); } },30); } else if(word.status==='active'){ clearInterval(bombTimer); playSound('correct'); word.status='safe'; } }
     function resetBomb(){ clearInterval(bombTimer); bombWords.value.forEach(w=>{w.status='hidden';w.timeLeft=100;}); }
 
-    // 8. 抢答盖板
+    // ==================== 8. 抢答盖板 ====================
     const guessWordsList = ref([]);
     function initGuessWordsList() {
       guessWordsList.value = (classData.value.module_2_vocab_drill?.guess_words||[]).map(w=>({...w,revealed:false}));
@@ -586,13 +1404,13 @@ createApp({
     function toggleGuessWord(i){ guessWordsList.value[i].revealed=!guessWordsList.value[i].revealed; }
     function resetGuessWords(){ guessWordsList.value.forEach(w=>w.revealed=false); }
 
-    // 9. 盲盒造句
+    // ==================== 9. 盲盒造句 ====================
     const v3Index = ref(0); const currentBlindBox = ref([]);
     watch(v3Index, ()=>{ const list=classData.value.module_2_vocab_drill?.blind_box_spinner||[]; if(list.length)currentBlindBox.value=(list[v3Index.value]?.words||[]).map(w=>({text:w.text,opened:false})); });
     function openBox(box){ box.opened=true; playSound('correct'); }
     function nextV3(){ const list=classData.value.module_2_vocab_drill?.blind_box_spinner||[]; if(list.length)v3Index.value=(v3Index.value+1)%list.length; }
 
-    // 10. 语法模块
+    // ==================== 10. 语法模块 ====================
     const grammarPointIndex = ref(0);
     const currentGrammarData = computed(()=>{ const arr=classData.value.module_3_grammar?.grammar_points||[]; return arr.length?arr[grammarPointIndex.value].levels:{}; });
     function changeGrammarPoint(idx){ grammarPointIndex.value=idx; g1Index.value=0; g2Index.value=0; g3Index.value=0; }
@@ -618,7 +1436,7 @@ createApp({
     const showG3Ans = ref(false);
     function nextG3(){ g3Index.value=(g3Index.value+1)%(currentGrammarData.value.level_3_scenario?.length||1); showG3Ans.value=false; }
 
-    // 11. 篇章与阅读
+    // ==================== 11. 篇章与阅读 ====================
     const sorting = reactive({ index:0, items:[], feedback:'', isCorrect:false, dragIdx:null });
     const currentSortingData = computed(()=>(classData.value.module_4_text?.level_1_sorting || [])[sorting.index] || {shuffled_items:[], correct_order:[], explanation:''});
     watch(()=>sorting.index, (ni)=>{ const q=classData.value.module_4_text?.level_1_sorting[ni]; if(q){ sorting.items=[...q.shuffled_items].sort(()=>.5-Math.random()); sorting.feedback=''; sorting.isCorrect=false; } });
@@ -633,7 +1451,7 @@ createApp({
     function checkCompQuiz(opt){ compQuiz.selectedOption=opt; compQuiz.showAnswer=true; if(opt === currentCompQuestion.value.answer) playSound('correct'); else playSound('wrong'); }
     function nextCompQuiz(){ if(compQuiz.qIdx<(currentCompSection.value.questions||[]).length-1){compQuiz.qIdx++;} else {compQuiz.sIdx=(compQuiz.sIdx+1)%(classData.value.module_10_comprehension?.length || 1); compQuiz.qIdx=0;} compQuiz.showAnswer=false; compQuiz.selectedOption=''; }
 
-    // 12. 辅助拓展功能
+    // ==================== 12. 辅助拓展功能 ====================
     const repetitionState = reactive({ visible:{} });
     function playSentenceAudio(text){ const u=new SpeechSynthesisUtterance(text); u.lang='zh-CN'; window.speechSynthesis.speak(u); }
     function toggleSentenceVisibility(i){ repetitionState.visible[i]=!repetitionState.visible[i]; }
@@ -650,7 +1468,7 @@ createApp({
 
     const wordCloudList = ref([]);
 
-    // 13. 诸神之战逻辑
+    // ==================== 13. 诸神之战逻辑 ====================
     const jeopardy = reactive({
       phase:'setup', scores:{wei:0,shu:0,wu:0}, answered:new Set(), bumpTeam: null,
       teamNames: { wei: "魏国", shu: "蜀国", wu: "吴国" },
@@ -690,7 +1508,6 @@ createApp({
 
       if (points === 10) {
         if (catIndex === 0) {
-          // 题型 1: 看图猜词 (vd1_bomb / word_bomb)
           const list = classData.value.module_2_vocab_drill?.word_bomb || [];
           if (list.length) {
             const item = list[Math.floor(Math.random() * list.length)];
@@ -702,7 +1519,6 @@ createApp({
             };
           }
         } else if (catIndex === 1) {
-          // 题型 2: 抢答 (vd2_guess_reveal / guess_words)
           const list = classData.value.module_2_vocab_drill?.guess_words || [];
           if (list.length) {
             const item = list[Math.floor(Math.random() * list.length)];
@@ -713,7 +1529,6 @@ createApp({
             };
           }
         } else if (catIndex === 2) {
-          // 题型 3: 词语搭配 (collocations)
           const list = classData.value.collocations || [];
           if (list.length) {
             const item = list[Math.floor(Math.random() * list.length)];
@@ -725,7 +1540,6 @@ createApp({
           }
         }
       } else if (points === 20) {
-        // 20分题: 连词成句 (gr1_order / level_1_drag_drop)
         const gps = classData.value.module_3_grammar?.grammar_points || [];
         const allDragDrop = [];
         gps.forEach(gp => {
@@ -743,7 +1557,6 @@ createApp({
           };
         }
       } else if (points === 30) {
-        // 30分题: 极限挑战 (c1_extreme_challenge / challenge_sets)
         const list = classData.value.module_6_challenge?.challenge_sets || [];
         if (list.length) {
           const item = list[catIndex % list.length];
@@ -755,7 +1568,6 @@ createApp({
         }
       }
 
-      // 如果数据中未找到，平稳回退到原始题库
       if (!qd) {
         qd = classData.value.module_8_jeopardy?.questions[qId] || {
           question: `【${points}分题】请作答`,
@@ -828,7 +1640,7 @@ createApp({
       jeopardy.showExtraAns=false; 
     }
 
-    // 14. 点名逻辑
+    // ==================== 14. 点名逻辑 ====================
     const pickedStudent = ref("准备抽取");
     const isSpinning = ref(false);
     function startPicker(){ 
@@ -865,7 +1677,6 @@ createApp({
       const lessonParam = (urlParams.get('lesson') || 'hsk4-11').trim();
       ROOM_CHANNEL.value = `wanglaoshi/hsklesson/room_${lessonParam}`;
 
-      // 尝试 1: 读取 JSON 配置文件
       try {
         const jsonPath = `./data/${lessonParam}.json`;
         const res = await fetch(jsonPath);
@@ -878,7 +1689,6 @@ createApp({
         console.warn(`未能在 ./data/${lessonParam}.json 找到JSON配置，尝试加载 JS 脚本文件...`);
       }
 
-      // 尝试 2: 动态加载 JS 脚本文件
       try {
         let scriptName = lessonParam.startsWith('lesson') ? `${lessonParam}.js` : `lesson${lessonParam.toUpperCase()}.js`;
         if (lessonParam === 'hsk4-11') scriptName = 'lessonHSK4-11.js';
@@ -907,6 +1717,10 @@ createApp({
 
     function initModulesAfterLoad() {
       isLoading.value = false;
+      // 强制重建汉字配对分组
+      charMatch.groups = [];
+      charMatch.round = 0;
+
       setupPinyinMatchRound(0);
       setupCollocationMatch();
       setupCharMatchRound(0);
@@ -992,6 +1806,11 @@ createApp({
     return {
       isLoading, classData, currentModule, currentActivity, currentActivities, setModule,
       isSidebarCollapsed, isSidebarHidden, activeStudents, mqttStatus,
+      // 双人PK
+      pairMode, isPkActivity, currentActivityName, pk, pkRoundSize: PK_ROUND_SIZE, pkCovered,
+      confettiPieces, newPkRound, restartPkRound, clickPkCard, clickPkTile, pkSelectionText,
+      formatPkTime, pkProgressPct,
+      // 单人配对
       pinyinMatch, selectHanzi, selectPinyin, nextPinyinMatchRound,
       collocationMatch, onCollocationItemClick, setupCollocationMatch, renderCollocationRound, nextCollocationRound,
       charMatch, onCharClick, clearCharSelection, nextCharMatchRound,
