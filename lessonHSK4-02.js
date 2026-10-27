@@ -449,7 +449,7 @@ if (lessonData.module_10_comprehension) {
 
 // 全局/模块导出绑定（全兼容）
 window.LESSONS_DATA = window.LESSONS_DATA || {};
-window.LESSONS_DATA['hsk4-2'] = lessonData;
+window.LESSONS_DATA['hsk4-02'] = lessonData;
 window.lessonData = lessonData; // For direct access during development
 
 // Node.js export
