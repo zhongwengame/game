@@ -14,6 +14,29 @@ const shuffleArray = (array) => {
 };
 
 const lessonData = {
+  schemaVersion: "aiclass-course-v1",
+  meta: {
+    lessonKey: "hsk4-17",
+    title: "第十七课：人与自然",
+    level: "HSK4"
+  },
+  features: {
+    preClass: true,
+    postClass: true,
+    jeopardy: true
+  },
+  preClass: {
+    warmUp: [],
+    questions: [],
+    writingCharacters: []
+  },
+  postClassHomework: {
+    tiers: {},
+    sharedPool: [],
+    tierPools: { A: [], B: [], C: [] },
+    assignmentSelection: { A: [], B: [], C: [] }
+  },
+
     "lesson": "HSK 4 - 第十七课《人与自然》",
     "students": [ "列夏", "丽莎", "明溪", "星悦", "德昊", "任华", "梦航", "基里尔", "萨~沙~", "萨沙", "达铭", "安德烈", "纪嘉", "高斯佳", "瓦列", "Maiia" ],
 
